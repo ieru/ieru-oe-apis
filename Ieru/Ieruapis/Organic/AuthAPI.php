@@ -50,21 +50,21 @@ class AuthAPI
      */
     public function login ()
     {
-        # Check that both parameters required for login are set
+        // Check that both parameters required for login are set
         if ( !isset( $this->_params['username'] ) OR !isset( $this->_params['password'] ) )
             return array( 'success'=>false, 'message'=>'Wrong parameters count for log in.' );
 
-        # Try to connect database
+        // Try to connect database
         $this->_connect_oauth();
 
-        # Query the database with the username and password given by the user
+        // Query the database with the username and password given by the user
         $stmt = $this->_oauthdb->prepare( 'SELECT user_id, user_username, user_password FROM users WHERE user_username = ? AND user_password = ? LIMIT 1' );
         $stmt->execute( array( $this->_params['username'], $this->_params['password'] ) );
         if ( !$user = $stmt->fetch( \PDO::FETCH_ASSOC ) )
             return array( 'success'=>false, 'message'=>'Wrong username or password.' );
 
-        # Try to retrieve token for IP and active session, creating a new token if none
-        # User can only be logged from one place at a time        
+        // Try to retrieve token for IP and active session, creating a new token if none
+        // User can only be logged from one place at a time        
         if ( !$token = $this->_get_token( $user ) )
         {
             $token = $this->_generate_token( $user );
@@ -74,12 +74,112 @@ class AuthAPI
             $stmt->execute( array( $token, $user['user_id'], 1, $_SERVER['REMOTE_ADDR'] ) );
         }
 
-        # Return the token
+        // Return the token
         $data = array( 'success'=>true, 'message'=>'Correct credentials.', 'data'=>array( 'usertoken'=>$token ) );
         return $data;
     }
 
-    /** 
+    /**
+     * Sets the selected token as inactive in the database
+     */
+    public function logout ()
+    {
+        // Check that both parameters required for login are set
+        if ( !isset( $this->_params['usertoken'] ) )
+            return array( 'success'=>false, 'message'=>'User token for logging out not specified.' );
+
+        // Try to connect database
+        $this->_connect_oauth();
+
+        // Update the usertoken to inactive
+        $stmt = $this->_oauthdb->prepare( 'UPDATE tokens SET token_active = 0 WHERE token_chars = ?' );
+        $stmt->execute( array( $_COOKIE['usertoken'] ) );
+
+        // Destroy session and related data
+        if ( !session_id() )
+            session_start();
+
+        session_regenerate_id( true );
+
+        setcookie( 'usertoken', '', 0, '/' );
+        setcookie( 'PHPSESSID', '', 0, '/' );
+
+        session_unset();
+        session_destroy();
+
+        return array( 'success'=>true, 'message'=>'Session logged out.' );
+    }
+
+    /**
+     * Register a new user
+     *
+     * @return  array   the result of the user registration
+     */
+    public function register ()
+    {
+        // Check that both parameters required for login are set
+        if ( !isset( $this->_params['form-register-username'] ) OR !isset( $this->_params['form-register-password'] ) OR !isset( $this->_params['form-register-email'] ) )
+            return array( 'success'=>false, 'message'=>'Wrong parameters count for registering user.' );
+
+        // Check that both parameters required for login are set
+        if ( !$this->_params['form-register-username'] OR !$this->_params['form-register-password'] OR !$this->_params['form-register-email'] )
+            return array( 'success'=>false, 'message'=>'The parameters can not be empty.' );
+
+        // Check that both passwords are the same
+        if ( $this->_params['form-register-password'] != $this->_params['form-register-repeat-password'] )
+            return array( 'success'=>false, 'message'=>'The passwords does not match.' );
+
+        // Try to connect database = if an error occurs, it will return an array, nothing otherwise
+        if ( $connect = $this->_connect_oauth() )
+            return $connect;
+
+        // Format data
+        $data['user_username'] = $_POST['form-register-username'];
+        $data['user_password'] = $this->_hash_password( $_POST['form-register-password'] );
+        $data['user_email']    = $_POST['form-register-email'];
+
+        $params = array();
+        foreach ( $data as $key=>$val )
+        {
+            $params[] = $key.' = ?';
+            $values[] = $val;
+        }
+        $p = implode( ',', $params );
+
+        // Query the database with the username and password given by the user
+        $stmt = $this->_oauthdb->prepare( 'INSERT INTO users SET '.$p );
+        $stmt->execute( $values );
+        
+        if ( $stmt->rowCount() > 0 )
+            return array( 'success'=>true, 'message'=>'User created.', 'data'=>$data );
+        else
+            return array( 'success'=>false, 'message'=>'There is already an user with that username.' );
+    }
+
+    /**
+     * Creates the has of a password for checking with the value stored
+     * in the database
+     *
+     * @param 	string 	$password 	The string to hash
+     * @return 	string  The password hashed
+     */
+    private function _hash_password ( $pass )
+    {
+    	return $pass;
+    }
+
+    /**
+     * Generates a session token for the given user
+     *
+     * @param   array   $user   The user data, retrieved from the database
+     * @return string(40) The generated token for the given user
+     */
+    private function _generate_token ( &$user )
+    {
+        return hash( 'sha256', $user['user_username'].microtime() );
+    }
+
+	/** 
      * Retrieves an active access token for the given user and IP address
      *
      * @param   array   $user   The user data, retrieved from the database
@@ -116,93 +216,5 @@ class AuthAPI
             $e = new APIException( 'An error ocurred while connecting with the database.' );
             $e->to_json();
         }
-    }
-
-    /**
-     * Generates a session token for the given user
-     *
-     * @param   array   $user   The user data, retrieved from the database
-     * @return string(40) The generated token for the given user
-     */
-    private function _generate_token ( &$user )
-    {
-        return hash( 'sha256', $user['user_username'].microtime() );
-    } 
-
-    /**
-     * Sets the selected token as inactive in the database
-     */
-    public function logout ()
-    {
-        # Check that both parameters required for login are set
-        if ( !isset( $this->_params['usertoken'] ) )
-            return array( 'success'=>false, 'message'=>'User token for logging out not specified.' );
-
-        # Try to connect database
-        $this->_connect_oauth();
-
-        # Update the usertoken to inactive
-        $stmt = $this->_oauthdb->prepare( 'UPDATE tokens SET token_active = 0 WHERE token_chars = ?' );
-        $stmt->execute( array( $_COOKIE['usertoken'] ) );
-
-        # Destroy session and related data
-        if ( !session_id() )
-            session_start();
-
-        session_regenerate_id( true );
-
-        setcookie( 'usertoken', '', 0, '/' );
-        setcookie( 'PHPSESSID', '', 0, '/' );
-
-        session_unset();
-        session_destroy();
-
-        return array( 'success'=>true, 'message'=>'Session logged out.' );
-    }
-
-    /**
-     * Register a new user
-     *
-     * @return  array   the result of the user registration
-     */
-    public function register ()
-    {
-        # Check that both parameters required for login are set
-        if ( !isset( $this->_params['form-register-username'] ) OR !isset( $this->_params['form-register-password'] ) OR !isset( $this->_params['form-register-email'] ) )
-            return array( 'success'=>false, 'message'=>'Wrong parameters count for registering user.' );
-
-        # Check that both parameters required for login are set
-        if ( !$this->_params['form-register-username'] OR !$this->_params['form-register-password'] OR !$this->_params['form-register-email'] )
-            return array( 'success'=>false, 'message'=>'The parameters can not be empty.' );
-
-        # Check that both passwords are the same
-        if ( $this->_params['form-register-password'] != $this->_params['form-register-repeat-password'] )
-            return array( 'success'=>false, 'message'=>'The passwords does not match.' );
-
-        # Try to connect database = if an error occurs, it will return an array, nothing otherwise
-        if ( $connect = $this->_connect_oauth() )
-            return $connect;
-
-        # Format data
-        $data['user_username'] = $_POST['form-register-username'];
-        $data['user_password'] = $_POST['form-register-password'];
-        $data['user_email']    = $_POST['form-register-email'];
-
-        $params = array();
-        foreach ( $data as $key=>$val )
-        {
-            $params[] = $key.' = ?';
-            $values[] = $val;
-        }
-        $p = implode( ',', $params );
-
-        # Query the database with the username and password given by the user
-        $stmt = $this->_oauthdb->prepare( 'INSERT INTO users SET '.$p );
-        $stmt->execute( $values );
-        
-        if ( $stmt->rowCount() > 0 )
-            return array( 'success'=>true, 'message'=>'User created.', 'data'=>$data );
-        else
-            return array( 'success'=>false, 'message'=>'There is already an user with that username.' );
     }
 }
