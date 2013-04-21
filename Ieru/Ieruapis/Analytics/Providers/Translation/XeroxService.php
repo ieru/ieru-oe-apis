@@ -44,7 +44,7 @@ class XeroxService implements MultilingualTranslationAdapter
 	public function request ( &$params )
 	{
 		if ( !isset( $params['from'] ) )
-			$params['from'] = isset( $params['from'] ? $params['from'] : 'en';
+			$params['from'] = isset( $params['from'] ) ? $params['from'] : 'en';
 
 		// Connect to Xerox
 		$url = 'https://services.open.xerox.com/Auth.svc/OAuth2';

@@ -366,6 +366,9 @@ class AnalyticsAPI
             $class_name = 'Ieru\Ieruapis\Analytics\Providers\Translation\\'.ucfirst( $def_service ).'Service';
             $service = new $class_name( $this->_params );
 
+            // Track how many time takes a translation with this service to complete
+            $start = microtime(true);
+
             // Try to connect to the translation service
             if ( $service->check_status() )
                 $service->connect();
@@ -374,6 +377,9 @@ class AnalyticsAPI
             
             // Execute the translation
             $translation = $service->request( $this->_params );
+
+            // Track how many time takes a translation with this service to complete
+            $end = microtime(true);
 
             // In case there is no translation retrieved, use default
             // translation service
@@ -390,7 +396,7 @@ class AnalyticsAPI
         }
 
         // Save the translation details to the database
-        return array( 'success'=>true, 'message'=>'Translation done.', 'data'=>array( 'translation'=>$translation, 'service'=>$def_service ) );
+        return array( 'success'=>true, 'message'=>'Translation done.', 'data'=>array( 'translation'=>$translation, 'service_used'=>$def_service, 'seconds_taken'=>$end-$start ) );
     }
 
     /**
