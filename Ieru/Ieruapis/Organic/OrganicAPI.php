@@ -3,7 +3,7 @@
  * Handles API requests for Organic.Lingua project.
  *
  * @package     Organic API
- * @version     1.1 - 2013-04-04 | 1.0 - 2012-10-15
+ * @version     1.1 - 2013-04-04
  * 
  * @author      David Baños Expósito
  *
@@ -206,12 +206,14 @@ class OrganicAPI
      */
     private function _parse_facets ( &$resources, &$facets, $lang )
     {
-        $i = $j = 0;
+        // Location of filters language file
+        $file = 'filters.php';
 
-        // Translate the filters
-        $translations = include( 'filters.php' );
+        // Load to $translation the contents of filters languages
+        $translations = include( $file );
 
         // Cycle through the facets
+        $i = $j = 0;
         foreach ( $resources['data']['facets'] as $key=>&$facet )
         {
             // Cycle through the filters
@@ -230,6 +232,7 @@ class OrganicAPI
                 }
                 else
                 {
+                    $saved = true;
                     $url = $this->_config->get_analytics_server_ip().'/api/analytics/translate';
                     $data = array( 'text'=>$facet_name, 'from'=>'en', 'to'=>$lang, 'service'=>'microsoft' );
                     $tr = json_decode( $this->_curl_get_data( $url, $data ) );
@@ -243,12 +246,8 @@ class OrganicAPI
             $i++;
         }
 
-        // Path to the file that stores the variables
-        define( 'ROOT', preg_replace( '/\/$/', '', $_SERVER['DOCUMENT_ROOT'] ) );
-        $file = 'filters.php';
-
-        // Write the file
-        if ( $fp = fopen( $file, 'w+' ) )
+        // Store languages in the file if any modification was done
+        if ( @$saved AND $fp = fopen( $file, 'w+' ) )
         {
             fwrite( $fp, "<?php\n" );
             fwrite( $fp, "return array(\n" );
