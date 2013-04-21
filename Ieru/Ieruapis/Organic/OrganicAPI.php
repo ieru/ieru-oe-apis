@@ -165,6 +165,7 @@ class OrganicAPI
             foreach ( $fetches as &$fetched )
             {
                 $temp['texts'][$fetched['info_lang']]['lang'] = $fetched['info_lang'];
+                $temp['texts'][$fetched['info_lang']]['type_class'] = 'human-translation';
                 $temp['texts'][$fetched['info_lang']]['type'] = 'human';
                 $temp['texts'][$fetched['info_lang']]['title'] = $fetched['title'];
                 $temp['texts'][$fetched['info_lang']]['description'] = $fetched['description'];
@@ -176,14 +177,14 @@ class OrganicAPI
                 if ( !array_key_exists( $autolang, $temp['texts'] ) )
                 {
                     $temp['texts'][$autolang]['lang'] = $autolang;
+                    $temp['texts'][$autolang]['type_class'] = 'automatic-translation';
                     $temp['texts'][$autolang]['type'] = 'automatic';
                     $temp['texts'][$autolang]['title'] = '';
                     $temp['texts'][$autolang]['description'] = '';
                     $temp['texts'][$autolang]['keywords'] = '';
                 }
             }
-
-            unset( $temp['title'], $temp['description'], $temp['keyword'] );
+            ksort( $temp['texts'] );
             $results = $temp;
             $results['success'] = true;
             $results['message'] = 'API resource found.';
@@ -296,7 +297,7 @@ class OrganicAPI
                             WHERE ( identifier.entry IN ( ?, ? ) OR identifier.entry_metametadata LIKE "%'.str_replace( '/oai:scam[.]kmr[.]se:|oai:green-oer:/si', '', $uri['resource'][0] ).'%" ) AND string.FK_title is not NULL AND strings.FK_description is not NULL 
                                   AND string.language = strings.language
                             GROUP BY string.language';
-echo str_replace( '/oai:scam[.]kmr[.]se:|oai:green-oer:/si', '', $uri['resource'][0] ), "\n";
+
                     $stmt = $this->_db->prepare( $sql );
 
                     if ( count( $uri ) == 1 )
