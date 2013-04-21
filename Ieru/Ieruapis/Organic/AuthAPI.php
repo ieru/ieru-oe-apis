@@ -59,7 +59,7 @@ class AuthAPI
 
         // Query the database with the username and password given by the user
         $stmt = $this->_oauthdb->prepare( 'SELECT user_id, user_username, user_password FROM users WHERE user_username = ? AND user_password = ? LIMIT 1' );
-        $stmt->execute( array( $this->_params['username'], $this->_params['password'] ) );
+        $stmt->execute( array( $this->_params['username'], $this->_hash_password( $this->_params['password'] ) ) );
         if ( !$user = $stmt->fetch( \PDO::FETCH_ASSOC ) )
             return array( 'success'=>false, 'message'=>'Wrong username or password.' );
 
