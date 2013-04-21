@@ -300,11 +300,10 @@ class OrganicAPI
 
                     $stmt = $this->_db->prepare( $sql );
 
-                    if ( count( $uri ) == 1 )
-                        $stmt->execute( array( $uri['resource'][0], $uri['resource'][0] ) );
+                    if ( count( $uri['resource'] ) == 1 )
+                        $stmt->execute( array( trim( $uri['resource'][0] ), trim( $uri['resource'][0] ) ) );
                     else
-                        $stmt->execute( array( $uri['resource'][0], $uri['resource'][1] ) );
-                    
+                        $stmt->execute( array( trim( $uri['resource'][0] ), trim( $uri['resource'][1] ) ) );
                     $fetches = $stmt->fetchAll( \PDO::FETCH_ASSOC );
                 }
                 # If an exception raises, return an empty array
