@@ -65,7 +65,7 @@ class OrganicAPI
         # Celi service not available
         if ( !$resources )
         {
-            $results = array( 'success'=>false, 'errcode'=>100, 'message'=>'Search service is down.' );
+            $results = array( 'success'=>false, 'errcode'=>100, 'message'=>'No results found.' );
         }
         # Resources retrieved from Celi
         else
