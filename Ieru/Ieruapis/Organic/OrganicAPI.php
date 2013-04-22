@@ -289,7 +289,7 @@ class OrganicAPI
                     # Picks up the resource in both english (always must be in english) and the user language. Will return one or two rows.
                     $sql = 'SELECT  string.Text as title, strings.Text as description, technical.format, identifier.entry_metametadata as entry, 
                                     agerange.Text as age_range, identifier.entry as resource, string.language as info_lang,
-                                    general.language as language, general.language as res_lang, string.FK_general as id
+                                    general.language as language, general.language as res_lang, string.FK_general as id, technical.location as location
                             FROM general
                             INNER JOIN identifier ON general.PrimaryKey = identifier.FK_general
                             INNER JOIN string ON string.FK_general = identifier.FK_general
