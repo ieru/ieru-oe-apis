@@ -68,7 +68,7 @@ class AnalyticsAPI
             else
                 throw new APIException( $class_name.' unavailable.' );
 
-            $response = $service->request( $this->_params, $this->_params['request_string'] );
+            $response = $service->request( $this->_params, $this->_params['request_string'], $this->_config );
             $json = $service->format( json_decode( $response ) );
 
             // Save request in the database

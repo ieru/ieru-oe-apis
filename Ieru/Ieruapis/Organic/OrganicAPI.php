@@ -217,34 +217,37 @@ class OrganicAPI
         $i = $j = 0;
         foreach ( $resources['data']['facets'] as $key=>&$facet )
         {
-            // Cycle through the filters
-            foreach ( $facet['filters'] as $k => $v )
+            if ( isset( $facet['filters'] ) )
             {
-                $facet_name = ( $facet['facet'] == 'language' ) ? $this->_lang[$v['filter']] : $v['filter'];
-                $facets[$i]['name'] = $facet['facet'];
-
-                // Check if there is a tranlation for it in the translations array,
-                // or request a translation to the translation service (and then
-                // it will be stored in the array and sent to a file)
-                if ( array_key_exists( strtolower( $v['filter'] ), $translations )
-                     AND array_key_exists( $lang, $translations[strtolower( $v['filter'] )] )  )
+                // Cycle through the filters
+                foreach ( $facet['filters'] as $k => $v )
                 {
-                    $tr = $translations[strtolower($v['filter'])][$lang];
-                }
-                else
-                {
-                    $saved = true;
-                    $url = $this->_config->get_analytics_server_ip().'/api/analytics/translate';
-                    $data = array( 'text'=>$facet_name, 'from'=>'en', 'to'=>$lang, 'service'=>'microsoft' );
-                    $tr = json_decode( $this->_curl_get_data( $url, $data ) );
-                    $tr = $tr->data->translation;
-                    $translations[strtolower($v['filter'])][$lang] = $tr;
-                }
+                    $facet_name = ( $facet['facet'] == 'language' ) ? $this->_lang[$v['filter']] : $v['filter'];
+                    $facets[$i]['name'] = $facet['facet'];
 
-                // create filter entry
-                $facets[$i]['results'][] = array( 'filter'=>$facet_name, 'value'=>$v['resources'], 'translation'=>$tr );
+                    // Check if there is a tranlation for it in the translations array,
+                    // or request a translation to the translation service (and then
+                    // it will be stored in the array and sent to a file)
+                    if ( array_key_exists( strtolower( $v['filter'] ), $translations )
+                         AND array_key_exists( $lang, $translations[strtolower( $v['filter'] )] )  )
+                    {
+                        $tr = $translations[strtolower($v['filter'])][$lang];
+                    }
+                    else
+                    {
+                        $saved = true;
+                        $url = $this->_config->get_analytics_server_ip().'/api/analytics/translate';
+                        $data = array( 'text'=>$facet_name, 'from'=>'en', 'to'=>$lang, 'service'=>'microsoft' );
+                        $tr = json_decode( $this->_curl_get_data( $url, $data ) );
+                        $tr = $tr->data->translation;
+                        $translations[strtolower($v['filter'])][$lang] = $tr;
+                    }
+
+                    // create filter entry
+                    $facets[$i]['results'][] = array( 'filter'=>$facet_name, 'value'=>$v['resources'], 'translation'=>$tr );
+                }
+                $i++;
             }
-            $i++;
         }
 
         // Store languages in the file if any modification was done

@@ -39,5 +39,5 @@ interface MultilingualSearchAdapter
      * @param array 	$data 			Information needed to do the request
      * @return string 	The translation
      */
-    public function request ( &$data, &$request_uri );
+    public function request ( &$data, &$request_uri, &$config = null );
 }

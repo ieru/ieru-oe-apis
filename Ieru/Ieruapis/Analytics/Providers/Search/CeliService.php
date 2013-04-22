@@ -14,9 +14,9 @@ class CeliService implements MultilingualSearchAdapter
 {
     private $_lang;
 
-    public function request ( &$data, &$request_uri )
+    public function request ( &$data, &$request_uri, &$config = null )
     {
-        $filters = $this->_format_filters( $data );
+        $filters = $this->_format_filters( $data, $config );
 
         # Format the request URI, check documentation for more details. This will return a json array.
         $data['filter'] = ( isset( $data['filter'] ) ) ? $data['filter'] : '*';
@@ -98,21 +98,9 @@ class CeliService implements MultilingualSearchAdapter
      *
      * @return void
      */
-    private function _format_filters ( &$data )
+    private function _format_filters ( &$data, &$config )
     {
-        $this->_lang['es'] = 'Spanish';
-        $this->_lang['de'] = 'German';
-        $this->_lang['el'] = 'Greek';
-        $this->_lang['ro'] = 'Romanian';
-        $this->_lang['hu'] = 'Hungarian';
-        $this->_lang['fr'] = 'French';
-        $this->_lang['bg'] = 'Bulgarian';
-        $this->_lang['nb'] = 'Norsk';
-        $this->_lang['et'] = 'Estonian';
-        $this->_lang['en'] = 'English';
-        $this->_lang['ru'] = 'Russian';
-        $this->_lang['no'] = 'Norwegian';
-        $this->_lang['hi'] = 'Hindi';
+        $this->_lang = $config->get_iso_lang();
 
         $filters = '*:*';
 
