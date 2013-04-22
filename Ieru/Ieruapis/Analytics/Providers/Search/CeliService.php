@@ -21,7 +21,7 @@ class CeliService implements MultilingualSearchAdapter
         # Format the request URI, check documentation for more details. This will return a json array.
         $data['filter'] = ( isset( $data['filter'] ) ) ? $data['filter'] : '*';
         $request_uri = 'http://research.celi.it:8080/OrganicLinguaSolr/select?indent=on&version=2.2'.
-                       '&q='.urlencode( $data['text'] ).'&start='.$data['offset'].
+                       '&q='.urlencode( html_entity_decode( $data['text'] ) ).'&start='.$data['offset'].
                        '&rows='.$data['limit'].
                        '&fl=general_identifier%2Cscore&wt=json&explainOther=&hl.fl='.
                        '&facet=true&facet.field=educationalContext&facet.field=language&facet.field=technicalFormat'.
