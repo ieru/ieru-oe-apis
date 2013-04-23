@@ -163,7 +163,7 @@ class AnalyticsAPI
 
         try
         {
-            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array("connection_timeout"=>4,'default_socket_timeout'=>2) );
+            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array( 'connection_timeout'=>4,'default_socket_timeout'=>2 ) );
 
             $func = 'Functionclass1.resourceRatingsMeanValue';
             $rating = $clienteSOAP->$func( $entry );
@@ -215,7 +215,7 @@ class AnalyticsAPI
         // Do the rating mambo
         try
         {
-            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array("connection_timeout"=>4,'default_socket_timeout'=>2) );
+            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array( 'connection_timeout'=>4,'default_socket_timeout'=>2 ) );
             $func = 'Functionclass1.addRating';
             for ( $i = 1; $i <= 6; $i++ )
             {
@@ -255,7 +255,7 @@ class AnalyticsAPI
 
         try
         {
-            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array("connection_timeout"=>4,'default_socket_timeout'=>2) );
+            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array( 'connection_timeout'=>4,'default_socket_timeout'=>2 ) );
 
             $func = 'Functionclass1.resourceTaggings';
             $tags = $clienteSOAP->$func( $entry );
@@ -284,7 +284,7 @@ class AnalyticsAPI
 
         try
         {
-            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array("connection_timeout"=>4,'default_socket_timeout'=>2) );
+            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array( 'connection_timeout'=>4,'default_socket_timeout'=>2 ) );
             $func = 'Functionclass1.resourceRatings';
             $rating = $clienteSOAP->$func( $entry );
         }
@@ -314,7 +314,7 @@ class AnalyticsAPI
 
         try
         {
-            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array("connection_timeout"=>4,'default_socket_timeout'=>2) );
+            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array( 'connection_timeout'=>4,'default_socket_timeout'=>2 ) );
             $func = 'Functionclass1.resourceReviewings';
             $rating = $clienteSOAP->$func( $entry );
         }
