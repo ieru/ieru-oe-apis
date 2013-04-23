@@ -146,13 +146,14 @@ class OrganicAPI
                         LEFT JOIN description ON identifier.FK_general=description.FK_general
                         LEFT JOIN string as strings ON string.FK_general=strings.FK_general
                         LEFT JOIN string as agerange ON string.FK_general=agerange.FK_typicalAgeRange 
-                    WHERE string.FK_general=? AND string.FK_title is not NULL AND strings.FK_description is not NULL 
+                    WHERE string.FK_general=? AND string.FK_title is not NULL
                           AND string.language = strings.language
                     GROUP BY string.language';
 
             $stmt = $this->_db->prepare( $sql );
             $stmt->execute( array( $this->_params['id'] ) );
             $fetches = $stmt->fetchAll( \PDO::FETCH_ASSOC );
+
         }
         # If an exception raises, return an empty array
         catch ( \Exception $e ) 
@@ -184,24 +185,34 @@ class OrganicAPI
             $temp = $fetches[0];
             foreach ( $fetches as &$fetched )
             {
-                $temp['texts'][$fetched['info_lang']]['lang'] = $fetched['info_lang'];
-                $temp['texts'][$fetched['info_lang']]['type_class'] = 'human-translation';
-                $temp['texts'][$fetched['info_lang']]['type'] = 'human';
-                $temp['texts'][$fetched['info_lang']]['title'] = $fetched['title'];
-                $temp['texts'][$fetched['info_lang']]['description'] = $fetched['description'];
-                @$temp['texts'][$fetched['info_lang']]['keywords'] = $keytemp[$fetched['info_lang']];
+                $temp['texts'][$fetched['info_lang']]['lang']        = $fetched['info_lang'];
+                $temp['texts'][$fetched['info_lang']]['type_class']  = 'human-translation';
+                $temp['texts'][$fetched['info_lang']]['type']        = 'human';
+                $temp['texts'][$fetched['info_lang']]['title']       = $fetched['title'];
+               @$temp['texts'][$fetched['info_lang']]['keywords']    = $keytemp[$fetched['info_lang']];
+
+                # Fetch description
+                $sql = 'SELECT Text as description
+                        FROM string
+                        WHERE FK_general = ? AND language = ? AND FK_description is not null';
+                $stmt = $this->_db->prepare( $sql );
+                $stmt->execute( array( $fetches[0]['id'], $fetched['info_lang'] ) );
+                $description = $stmt->fetchAll( \PDO::FETCH_ASSOC );
+
+                if ( $description )
+                    $temp['texts'][$fetched['info_lang']]['description'] = $description[0]['description'];
             }
             # Add automatic translations from $this->_autolang
             foreach ( $this->_autolang as $autolang )
             {
                 if ( !array_key_exists( $autolang, $temp['texts'] ) )
                 {
-                    $temp['texts'][$autolang]['lang'] = $autolang;
-                    $temp['texts'][$autolang]['type_class'] = 'automatic-translation';
-                    $temp['texts'][$autolang]['type'] = 'automatic';
-                    $temp['texts'][$autolang]['title'] = '';
+                    $temp['texts'][$autolang]['lang']        = $autolang;
+                    $temp['texts'][$autolang]['type_class']  = 'automatic-translation';
+                    $temp['texts'][$autolang]['type']        = 'automatic';
+                    $temp['texts'][$autolang]['title']       = '';
                     $temp['texts'][$autolang]['description'] = '';
-                    $temp['texts'][$autolang]['keywords'] = '';
+                    $temp['texts'][$autolang]['keywords']    = '';
                 }
             }
             ksort( $temp['texts'] );
@@ -328,7 +339,7 @@ class OrganicAPI
                             INNER JOIN string as strings    ON string.FK_general        = strings.FK_general
                             INNER JOIN string as agerange   ON string.FK_general        = agerange.FK_typicalAgeRange 
                             WHERE ( identifier.entry = ? OR identifier.entry_metametadata = ? OR identifier.entry = ? OR identifier.entry_metametadata = ?) 
-                                AND string.language = strings.language
+                                AND string.language = strings.language AND string.FK_title is not null
                             GROUP BY string.language';
 
                     $stmt = $this->_db->prepare( $sql );
@@ -373,8 +384,18 @@ class OrganicAPI
                         $temp['texts'][$fetched['info_lang']]['type_class'] = 'human-translation';
                        @$temp['texts'][$fetched['info_lang']]['type'] = 'human';
                         $temp['texts'][$fetched['info_lang']]['title'] = $fetched['title'];
-                        $temp['texts'][$fetched['info_lang']]['description'] = $fetched['description'];
                        @$temp['texts'][$fetched['info_lang']]['keywords'] = $keytemp[$fetched['info_lang']];
+
+                        # Fetch description
+                        $sql = 'SELECT Text as description
+                                FROM string
+                                WHERE FK_general = ? AND language = ? AND FK_description is not null';
+                        $stmt = $this->_db->prepare( $sql );
+                        $stmt->execute( array( $fetches[0]['id'], $fetched['info_lang'] ) );
+                        $description = $stmt->fetchAll( \PDO::FETCH_ASSOC );
+
+                        if ( $description )
+                            $temp['texts'][$fetched['info_lang']]['description'] = $description[0]['description'];
                     }
                     # Add automatic language translations
                     foreach ( $this->_autolang as $autolang )
