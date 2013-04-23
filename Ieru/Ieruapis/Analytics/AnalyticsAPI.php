@@ -385,7 +385,6 @@ class AnalyticsAPI
             // translation service
             if ( $translation == '' )
             {
-                echo 'entra';
                 $this->_params['service'] = 'microsoft';
                 return $this->get_translation();
             }
