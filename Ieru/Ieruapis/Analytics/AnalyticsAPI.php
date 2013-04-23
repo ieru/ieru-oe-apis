@@ -76,6 +76,10 @@ class AnalyticsAPI
         }
         catch ( APIException $e )
         {
+            // Save request in the database
+            @$this->_save_search_request();
+
+            // Throw the error as json
             $e->to_json();
         }
 
@@ -88,7 +92,7 @@ class AnalyticsAPI
      * @return void
      * @todo If an error raises while saving the request to a log, send an email to the admins
      */
-    private function _save_search_request ( &$response )
+    private function _save_search_request ( &$response = '' )
     {
         try
         {
@@ -159,7 +163,7 @@ class AnalyticsAPI
 
         try
         {
-            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl' );
+            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array("connection_timeout"=>4) );
 
             $func = 'Functionclass1.resourceRatingsMeanValue';
             $rating = $clienteSOAP->$func( $entry );
@@ -211,7 +215,7 @@ class AnalyticsAPI
         // Do the rating mambo
         try
         {
-            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl' );
+            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array("connection_timeout"=>4) );
             $func = 'Functionclass1.addRating';
             for ( $i = 1; $i <= 6; $i++ )
             {
@@ -251,7 +255,7 @@ class AnalyticsAPI
 
         try
         {
-            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl' );
+            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array("connection_timeout"=>4) );
 
             $func = 'Functionclass1.resourceTaggings';
             $tags = $clienteSOAP->$func( $entry );
@@ -280,7 +284,7 @@ class AnalyticsAPI
 
         try
         {
-            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl' );
+            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array("connection_timeout"=>4) );
             $func = 'Functionclass1.resourceRatings';
             $rating = $clienteSOAP->$func( $entry );
         }
@@ -310,7 +314,7 @@ class AnalyticsAPI
 
         try
         {
-            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl' );
+            $clienteSOAP = new \SoapClient( 'http://62.217.124.135/cfmodule/server.php?wsdl', array("connection_timeout"=>4) );
             $func = 'Functionclass1.resourceReviewings';
             $rating = $clienteSOAP->$func( $entry );
         }
