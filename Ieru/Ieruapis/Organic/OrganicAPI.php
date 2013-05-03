@@ -61,7 +61,7 @@ class OrganicAPI
         $url = $this->_config->get_analytics_server_ip().'/api/analytics/search';
         $data = $this->_curl_request( $url, $this->_params );
         $resources = json_decode( $data, true );
-
+        
         # Celi service not available
         if ( !$resources )
         {
@@ -77,11 +77,11 @@ class OrganicAPI
                 # Parses the facets for filtering the results
                 $results['success'] = true;
                 $results['message'] = 'Search results retrieved from Celi Service. ';
-                $results['total']   = $resources['data']['total_records'];
-                $results['pages']   = ceil( $resources['data']['total_records'] / $this->_params['limit'] );
-                $results['records'] =& $records;
-                $this->_parse_facets( $resources, $results['filters'], $this->_params['lang'] );
-                foreach ( $results['records'] as $key => &$value )
+                $results['data']['total']   = $resources['data']['total_records'];
+                $results['data']['pages']   = ceil( $resources['data']['total_records'] / $this->_params['limit'] );
+                $results['data']['resources'] =& $records;
+                $this->_parse_facets( $resources, $results['data']['facets'], $this->_params['lang'] );
+                foreach ( $results['data']['resources'] as $key => &$value )
                     $value['position'] = @++$cont;
             }
             elseif ( count( $resources['data']['resources'] ) <> count( $records ) )
@@ -331,7 +331,7 @@ class OrganicAPI
                     # Picks up the resource in both english (always must be in english) and the user language. Will return one or two rows.
                     $sql = 'SELECT  string.Text as title, strings.Text as description, technical.format, identifier.entry_metametadata as entry, 
                                     agerange.Text as age_range, identifier.entry as resource, string.language as info_lang,
-                                    general.language as language, general.language as res_lang, string.FK_general as id, technical.location as location
+                                    general.language as language, string.FK_general as id, technical.location as location
                             FROM general
                             INNER JOIN identifier           ON general.FK_lom           = identifier.FK_general
                             INNER JOIN string               ON string.FK_general        = identifier.FK_general
@@ -411,7 +411,7 @@ class OrganicAPI
                         }
                     }
                     ksort( $temp['texts'] );
-                    unset( $temp['title'], $temp['description'], $temp['keyword'] );
+                    unset( $temp['title'], $temp['description'], $temp['keyword'], $temp['info_lang'] );
                     #$temp['entry_link'] = str_replace( '/', '@', $temp['entry'] );
                     // ÑAPA ALERT
                     if ( array_key_exists( $temp['location'], $napa_lang ) )
