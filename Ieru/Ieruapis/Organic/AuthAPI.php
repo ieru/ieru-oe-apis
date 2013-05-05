@@ -54,11 +54,15 @@ class AuthAPI
         if ( !isset( $this->_params['username'] ) OR !isset( $this->_params['password'] ) )
             return array( 'success'=>false, 'message'=>'Wrong parameters count for log in.' );
 
-        // Try to connect database
+        // Try to connect to the database
         $this->_connect_oauth();
 
         // Query the database with the username and password given by the user
-        $stmt = $this->_oauthdb->prepare( 'SELECT user_id, user_username, user_password FROM users WHERE user_username = ? AND user_password = ? LIMIT 1' );
+        $sql = 'SELECT user_id, user_username, user_password 
+                FROM users 
+                WHERE user_username = ? AND user_password = ? 
+                LIMIT 1';
+        $stmt = $this->_oauthdb->prepare( $sql );
         $stmt->execute( array( $this->_params['username'], $this->_hash_password( $this->_params['password'] ) ) );
         if ( !$user = $stmt->fetch( \PDO::FETCH_ASSOC ) )
             return array( 'success'=>false, 'message'=>'Wrong username or password.' );
@@ -68,7 +72,7 @@ class AuthAPI
         if ( !$token = $this->_get_token( $user ) )
         {
             $token = $this->_generate_token( $user );
-            $stmt = $this->_oauthdb->prepare( 'UPDATE tokens SET user_id = ?, token_active = 0' );
+            $stmt = $this->_oauthdb->prepare( 'UPDATE tokens SET token_active = 0 WHERE user_id = ?' );
             $stmt->execute( array( $user['user_id'] ) );
             $stmt = $this->_oauthdb->prepare( 'INSERT INTO tokens SET token_chars = ?, user_id = ?, token_active = ?, token_ip = ?' );
             $stmt->execute( array( $token, $user['user_id'], 1, $_SERVER['REMOTE_ADDR'] ) );
@@ -88,7 +92,7 @@ class AuthAPI
         if ( !isset( $this->_params['usertoken'] ) )
             return array( 'success'=>false, 'message'=>'User token for logging out not specified.' );
 
-        // Try to connect database
+        // Try to connect to the database
         $this->_connect_oauth();
 
         // Update the usertoken to inactive
