@@ -63,9 +63,14 @@ class OrganicAPI
         $resources = json_decode( $data, true );
         
         # Celi service not available
-        if ( !$resources )
+        if ( $resources == null )
         {
-            $results = array( 'success'=>false, 'errcode'=>100, 'message'=>'No results found.' );
+            // En este caso CLIR está caído y habrá que hacer una búsqueda local
+            $results = array( 'success'=>false, 'errcode'=>200, 'message'=>'Search service not available. Try again later.' );
+        }
+        elseif ( !count( $resources ) )
+        {
+            $results = array( 'success'=>false, 'errcode'=>100, 'message'=>$resources['message'] );
         }
         # Resources retrieved from Celi
         else

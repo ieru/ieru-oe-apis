@@ -43,6 +43,7 @@ class Config
 	{
 		if ( !$this->_autolang )
 		{
+                  $this->_autolang[] = 'en'; # English
 			$this->_autolang[] = 'de'; # German
 			$this->_autolang[] = 'fr'; # French
 			$this->_autolang[] = 'es'; # Spanish
