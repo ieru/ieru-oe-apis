@@ -52,7 +52,7 @@ class GrnetAdapter
         $rating = ( @$rating->noitemfound || @$rating->norate ) ? 0 : $rating->totalRatingsMeanValue;
         $votes = ( @$votes->noitemfound || @$votes->norate ) ? 0 : $votes->resourceRatingsTotalNumber;
 
-        $result = array( 'success'=>true, 'message'=>'Rating retrieved correctly', 'id'=>$this->_params['id'], 'data'=>array( 'rating'=>round( $rating ), 'votes'=>$votes ) );
+        $result = array( 'success'=>true, 'message'=>'Rating retrieved correctly', 'data'=>array( 'rating'=>round( $rating ), 'votes'=>$votes ) );
 
         return $result;
     }
@@ -205,5 +205,24 @@ class GrnetAdapter
         $result = array( 'success'=>true, 'message'=>'Rating history retrieved correctly.', 'id'=>$this->_params['id'], 'data'=>$rating );
 
         return $result;
+    }
+
+    /**
+     * Connects with the OAuth database
+     *
+     * @return array is NOK | nothing if OK
+     */
+    private function _connect_oauth ()
+    {
+        try 
+        {
+            $db = $this->_config->get_db_oauth_info();
+            $this->_oauthdb = new \PDO( 'mysql:host='.$db['host'].';dbname='.$db['database'], $db['username'], $db['password'] );
+        } 
+        catch ( \Exception $e ) 
+        {
+            $e = new APIException( 'An error ocurred while connecting with the database.' );
+            $e->to_json();
+        }
     }
 }
