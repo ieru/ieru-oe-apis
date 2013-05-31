@@ -63,7 +63,11 @@ class OrganicAPI
         $resources = json_decode( $data, true );
         
         # Celi service not available
-        if ( $resources == null )
+        if ( isset( $resources['success'] ) AND !$resources['success'] )
+        {
+            $results = array( 'success'=>false, 'errcode'=>201, 'message'=>$resources['message'] );
+        }
+        elseif ( $resources == null )
         {
             // En este caso CLIR está caído y habrá que hacer una búsqueda local
             $results = array( 'success'=>false, 'errcode'=>200, 'message'=>'Search service not available. Try again later.' );
@@ -331,6 +335,12 @@ class OrganicAPI
         {
             foreach ( $uris as $uri ) 
             {
+                if ( !is_array( $uri ) )
+                {
+                    $array['resource'][0] = $uri;
+                    $uri = $array;
+                }
+
                 try 
                 {
                     # Picks up the resource in both english (always must be in english) and the user language. Will return one or two rows.
@@ -479,9 +489,15 @@ class OrganicAPI
         curl_setopt( $ch, CURLOPT_URL, $url.'?'.http_build_query( $post_data ) );
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
         curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 2 );
-        curl_setopt( $ch, CURLOPT_TIMEOUT, 7 );
+        curl_setopt( $ch, CURLOPT_TIMEOUT, 15 );
         #curl_setopt( $ch, CURLOPT_POSTFIELDS, http_build_query( $post_data ) );
         $data = curl_exec( $ch );
+        if ( curl_errno($ch) > 0 )
+        {
+            $e = new APIException( 'Search request timeout.' );
+            $e->to_json();
+            die();
+        }
         curl_close( $ch );
         return $data; 
     }
@@ -502,7 +518,7 @@ class OrganicAPI
             curl_setopt( $ch, CURLOPT_URL, $url );
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
         curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 2 );
-        curl_setopt( $ch, CURLOPT_TIMEOUT, 7 );
+        curl_setopt( $ch, CURLOPT_TIMEOUT, 15 );
         $data = curl_exec( $ch );
         curl_close( $ch );
         return $data;

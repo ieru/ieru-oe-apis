@@ -27,6 +27,7 @@ class Config
 			$this->_routes['POST'][] = array( '/resources',     'controller'=>'OrganicAPI#fetch_resources' );
 			$this->_routes['GET'][]  = array( '/resources/:id', 'controller'=>'OrganicAPI#fetch_resource' );
 			$this->_routes['GET'][]  = array( '/search',        'controller'=>'OrganicAPI#get_search' );
+                  $this->_routes['POST'][] = array( '/search',        'controller'=>'OrganicAPI#fetch_resources' );
 			$this->_routes['GET'][]  = array( '/login',         'controller'=>'AuthAPI#login' );
 			$this->_routes['GET'][]  = array( '/logout',        'controller'=>'AuthAPI#logout' );
 			$this->_routes['POST'][] = array( '/register',      'controller'=>'AuthAPI#register' );
@@ -290,7 +291,7 @@ class Config
        */
       public function get_analytics_server_ip ()
       {
-            return 'http://lingua.dev';
+            return 'http://edunet.php';
       }
 
       /**

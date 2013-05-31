@@ -10,6 +10,8 @@
 
 namespace Ieru\Ieruapis\Analytics\Providers\Search;
 
+use \Ieru\Restengine\Engine\Exception\APIException;
+
 class CeliService implements MultilingualSearchAdapter
 {
     private $_lang;
@@ -74,7 +76,6 @@ class CeliService implements MultilingualSearchAdapter
             }
         }
         $response['data']['facets'] = array();
-        #print_r( $data );
 
         foreach ( $data->facet_counts->facet_fields as $facet_name=>$facet )
         {
@@ -139,8 +140,13 @@ class CeliService implements MultilingualSearchAdapter
         curl_setopt( $ch, CURLOPT_URL, $url );
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
         curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 2 );
-        curl_setopt( $ch, CURLOPT_TIMEOUT, 7 );
+        curl_setopt( $ch, CURLOPT_TIMEOUT, 14 );
         $data = curl_exec( $ch );
+        if ( curl_errno($ch) )
+        {
+            $e = new APIException( 'CLIR request timeout.' );
+            $e->to_json();
+        }
         curl_close( $ch );
         return $data;
     }
