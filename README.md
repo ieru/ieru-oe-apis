@@ -18,4 +18,4 @@ Also, the APIs have a Config folder. Check those files and change the parameters
 
 In Development
 --------------
-There is a third project involved, and is related to an implementation as a relational database of the IEEE LOM standard. It is located here: [IERU Rest Engine](https://github.com/ieru/ieru-rest-engine), and is used for inserting the data of an IEEE LOM xml file into the database. Organic.Lingua API uses such a database for the resources thrown by the searches.
+There is a third project involved, and is related to an implementation as a relational database of the IEEE LOM standard. It is located here: [lom2rdb](https://github.com/ieru/lom2rdb), and is used for inserting the data of an IEEE LOM xml file into the database. Organic.Lingua API uses such a database for the resources thrown by the searches.
