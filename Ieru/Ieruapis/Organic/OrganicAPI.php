@@ -61,7 +61,7 @@ class OrganicAPI
         $url = $this->_config->get_analytics_server_ip().'/api/analytics/search';
         $data = $this->_curl_request( $url, $this->_params );
         $resources = json_decode( $data, true );
-        
+        //print_r( $resources ); die();
         # Celi service not available
         if ( isset( $resources['success'] ) AND !$resources['success'] )
         {
@@ -469,8 +469,9 @@ class OrganicAPI
         }
         else
         {
-            $results['success'] = true;
+            $results['success'] = false;
             $results['message'] = 'No results found.';
+            unset( $results['records'] );
         }
 
         return $results;
