@@ -60,11 +60,18 @@ class AuthAPI
         // Query the database with the username and password given by the user
         $sql = 'SELECT user_id, user_username, user_password 
                 FROM users 
-                WHERE user_username = ? AND user_password = ? 
+                WHERE user_username = ?
                 LIMIT 1';
+
         $stmt = $this->_oauthdb->prepare( $sql );
-        $stmt->execute( array( $this->_params['username'], $this->_hash_password( $this->_params['password'] ) ) );
+        $stmt->execute( array( $this->_params['username'] ) );
+        
+        // Wrong username
         if ( !$user = $stmt->fetch( \PDO::FETCH_ASSOC ) )
+            return array( 'success'=>false, 'message'=>'Wrong username or password' );
+
+        // Separate user password
+        if ( !$this->_check_password( $this->_params['password'], $user['user_password'] ) )
             return array( 'success'=>false, 'message'=>'Wrong username or password.' );
 
         // Try to retrieve token for IP and active session, creating a new token if none
@@ -169,7 +176,11 @@ class AuthAPI
      */
     private function _hash_password ( $pass )
     {
-    	return $pass;
+        $hash = md5( uniqid( rand(), true ).microtime() );
+        $encrypted = md5( $pass.$hash );
+        $password = $encrypted.':'.$hash;
+
+    	return $password;
     }
 
     /**
@@ -220,5 +231,42 @@ class AuthAPI
             $e = new APIException( 'An error ocurred while connecting with the database.' );
             $e->to_json();
         }
+    }
+
+    /**
+     * Import users from a joomla database to the OAuth database
+     *
+     * @return void
+     */
+    private function _import_users ()
+    {
+        // Import users
+        $sql = 'SELECT *FROM jos_users';
+        $stmt = $this->_oauthdb->prepare( $sql );
+        $stmt->execute();
+
+        $users = $stmt->fetchAll( \PDO::FETCH_ASSOC );
+        foreach ( $users as $user )
+        {
+            echo $user['username'], "\n";
+            $sql = 'INSERT INTO users SET user_id=?,user_name=?,user_username=?,user_password=?,user_password_joomla=?,user_email=?,user_creation_date=?';
+            $stmt = $this->_oauthdb->prepare( $sql );
+            $stmt->execute( array( $user['id'], $user['name'], $user['username'], $user['password'],$user['password'],$user['email'],$user['registerDate'] ) );
+        }
+    }
+
+    /**
+     * Check that a given password is equal to a oauth password
+     *
+     * @param $password
+     * @param $oauth_password
+     * @return boolean  Wether they are equal or not
+     */
+    private function _check_password ( $password, $oauth_password )
+    {
+        $pass = explode( ':', $oauth_password );
+        $hash = md5( $password.$pass[1] );
+
+        return $hash == $pass[0] ? true : false;
     }
 }
