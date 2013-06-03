@@ -14,7 +14,7 @@ class Config
 {
 	private $_routes;
 	private $_autolang;
-
+      
 	/**
 	 * Returns the routes allowed in this API
 	 *
