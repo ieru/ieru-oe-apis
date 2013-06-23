@@ -128,7 +128,7 @@ class AnalyticsAPI
 
         // Get time and ip of the request
         $data['request_ip']       = $_SERVER['REMOTE_ADDR'];
-        $data['request_datetime'] = date( 'Y-m-d H:i:s' );
+        $data['request_datetime'] = @date( 'Y-m-d H:i:s' );
 
         // Variables for formatting automatically the INSERT statement
         foreach ( $data as $key=>$value )
