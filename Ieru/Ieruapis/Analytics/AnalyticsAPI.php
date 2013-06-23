@@ -49,13 +49,9 @@ class AnalyticsAPI
             {
                 // Check for a valid service
                 if ( in_array( $this->_params['service'], $this->_config->get_search_services() ) )
-                {
                     $service = $this->_params['service'];
-                }
                 else
-                {
                     throw new APIException( 'Requested search service not available in this API.' );
-                }
             }
 
             // Create service provider adapter

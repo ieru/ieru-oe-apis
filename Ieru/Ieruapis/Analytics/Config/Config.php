@@ -75,7 +75,7 @@ class Config
 	{
 		return array( 
 			'host'=>'localhost',
-			'database'=>'analytics_service',
+			'database'=>'ieru_organic_analytics',
 			'username'=>'root',
 			'password'=>''
 		);
@@ -90,7 +90,7 @@ class Config
 	{
 		return array( 
 			'host'=>'localhost',
-			'database'=>'ieru_organic_lingua_oauth',
+			'database'=>'ieru_organic_oauth',
 			'username'=>'root',
 			'password'=>''
 		);

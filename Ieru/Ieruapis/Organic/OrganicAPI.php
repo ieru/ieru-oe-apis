@@ -500,7 +500,7 @@ class OrganicAPI
             die();
         }
         curl_close( $ch );
-        return $data; 
+        return $data;
     }
 
     /**
@@ -523,5 +523,43 @@ class OrganicAPI
         $data = curl_exec( $ch );
         curl_close( $ch );
         return $data;
+    }
+
+    /**
+     * Makes an autocomplete request to the search service, with a small list of possible terms.
+     *
+     * @return array
+     */
+    public function fetch_typeahead ()
+    {
+        $auto = array();
+
+        // Make request
+        $url = 'http://research.celi.it:8080/OrganicLinguaSolr/select/?q=*%3A*&facet=true&facet.field=autocompletion&facet.mincount=1&facet.prefix='.$this->_params['text'].'&rows=0&wt=json';
+        $ch = curl_init();
+        curl_setopt( $ch, CURLOPT_URL, $url );
+        curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+        curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 2 );
+        curl_setopt( $ch, CURLOPT_TIMEOUT, 15 );
+        $data = curl_exec( $ch );
+
+        // Check timeout error
+        if ( curl_errno($ch) > 0 )
+        {
+            $e = new APIException( 'Search request timeout.' );
+            $e->to_json();
+            die();
+        }
+
+        // Format the autocompletion terms
+        $terms = json_decode( $data );
+        foreach ( $terms->facet_counts->facet_fields->autocompletion as $term )
+            if ( !is_numeric( $term ) )
+                $auto[] = $term;
+
+        // Return the json with the autoterms
+        //$results = array( 'success'=> true, 'message'=>'Autocomplete fetches.', 'data'=>array( 'terms'=>$auto ) );
+        // Must return only the array of terms for using Twitter Typeahed javascript module
+        return $auto;
     }
 }

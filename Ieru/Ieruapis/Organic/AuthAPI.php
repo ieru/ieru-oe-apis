@@ -164,7 +164,7 @@ class AuthAPI
         if ( $stmt->rowCount() > 0 )
             return array( 'success'=>true, 'message'=>'User created.', 'data'=>$data );
         else
-            return array( 'success'=>false, 'message'=>'There is already an user with that username.' );
+            return array( 'success'=>false, 'message'=>'There is already an user with that username or email.' );
     }
 
     /**
