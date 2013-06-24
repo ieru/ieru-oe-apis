@@ -31,9 +31,11 @@ class Config
                   $this->_routes['POST'][] = array( '/search',           'controller'=>'OrganicAPI#fetch_resources' );
                   $this->_routes['GET'][]  = array( '/search/typeahead', 'controller'=>'OrganicAPI#fetch_typeahead' );
 
-			$this->_routes['GET'][]  = array( '/login',         'controller'=>'AuthAPI#login' );
-			$this->_routes['GET'][]  = array( '/logout',        'controller'=>'AuthAPI#logout' );
-			$this->_routes['POST'][] = array( '/register',      'controller'=>'AuthAPI#register' );
+			$this->_routes['GET'][]  = array( '/login',                   'controller'=>'AuthAPI#login' );
+			$this->_routes['GET'][]  = array( '/logout',                  'controller'=>'AuthAPI#logout' );
+			$this->_routes['POST'][] = array( '/register',                'controller'=>'AuthAPI#register' );
+
+                  $this->_routes['GET'][]  = array( '/users/:user/activate', 'controller'=>'AuthAPI#activate' );
 
 		}
 		return $this->_routes;

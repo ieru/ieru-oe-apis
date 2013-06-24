@@ -136,6 +136,10 @@ class AuthAPI
         if ( !$this->_params['form-register-username'] OR !$this->_params['form-register-password'] OR !$this->_params['form-register-email'] )
             return array( 'success'=>false, 'message'=>'The parameters can not be empty.' );
 
+        // Check that both parameters required for login are set
+        if ( preg_match( '/[^a-z0-9]/si', $this->_params['form-register-username'] ) )
+            return array( 'success'=>false, 'message'=>'The username can not contain special characters.' );
+
         // Check that both passwords are the same
         if ( $this->_params['form-register-password'] != $this->_params['form-register-repeat-password'] )
             return array( 'success'=>false, 'message'=>'The passwords does not match.' );
@@ -148,6 +152,9 @@ class AuthAPI
         $data['user_username'] = $_POST['form-register-username'];
         $data['user_password'] = $this->_hash_password( $_POST['form-register-password'] );
         $data['user_email']    = $_POST['form-register-email'];
+        $data['user_name']     = $_POST['form-register-name'];
+        $data['user_active']   = 0;
+        $data['user_activation_hash'] = md5( $data['user_password'] );
 
         $params = array();
         foreach ( $data as $key=>$val )
@@ -162,9 +169,77 @@ class AuthAPI
         $stmt->execute( $values );
         
         if ( $stmt->rowCount() > 0 )
+        {
+            $this->_send_activation_email( $data );
             return array( 'success'=>true, 'message'=>'User created.', 'data'=>$data );
+        }
         else
+        {
             return array( 'success'=>false, 'message'=>'There is already an user with that username or email.' );
+        }
+    }
+
+    /**
+     * Activates an user through the link sent to his email
+     */
+    public function activate ()
+    {
+        // Check if the parameters are correct
+        if ( !isset( $this->_params['user'] ) OR !isset( $this->_params['hash'] ) )
+            return array( 'success'=>false, 'message'=>'Wrong parameter count for activating user.' );
+
+        // Check if the parameters are correct
+        if ( !$this->_params['user'] OR !$this->_params['hash'] )
+            return array( 'success'=>false, 'message'=>'Wrong parameters for activating user.' );
+
+        $data['user_active'] = 1;
+
+        // Try to connect database = if an error occurs, it will return an array, nothing otherwise
+        if ( $connect = $this->_connect_oauth() )
+            return $connect;
+
+        // Query the database with the username and password given by the user
+        $sql = 'UPDATE users 
+                SET user_active = 1, user_activation_hash = ""
+                WHERE user_activation_hash = ? AND user_username = ? AND user_active = 0';
+        $stmt = $this->_oauthdb->prepare( $sql );
+        $stmt->execute( array( $this->_params['hash'], $this->_params['user'] ) );
+
+        // If the query affects at least one row, the user has been activated
+        if ( $stmt->rowCount() > 0 )
+            return array( 'success'=>true, 'message'=>'User activated.' );
+        else
+            return array( 'success'=>false, 'message'=>'User not found or already active.' );
+    }
+
+    /**
+     * Sends an activation email to the user
+     *
+     * @param   array   &$data  The user information registering
+     * @return  void
+     */
+    private function _send_activation_email ( &$data )
+    {
+        $mail = new \Ieru\Ieruapis\Organic\PHPMailer();
+
+        $mail->From = 'no-reply@organic-edunet.eu';
+        $mail->FromName = 'Organic.Edunet';
+        $mail->AddAddress( $data['user_email'] );  // Add a recipient
+        $mail->AddReplyTo('no-reply@organic-edunet.eu', 'Information');
+        $mail->AddBCC('david.banos@uah.es');
+
+        $mail->WordWrap = 50;                                 // Set word wrap to 50 characters
+        $mail->IsHTML(true);                                  // Set email format to HTML
+
+        $mail->Subject = '[Organic.Edunet] New user registration';
+        $mail->Body    = '<p>Thank you for registering. You can activate your account following this link</p><p><a href="'.$this->_config->get_analytics_server_ip().'/#/user/register/'.$data['user_username'].'/'.$data['user_activation_hash'].'">'.$this->_config->get_analytics_server_ip().'/#/user/register/activation/'.$data['user_activation_hash'].'</a></p><p>Organic.Edunet website</p>';
+        $mail->AltBody = "Thank you for registering. You can activate your account following this link\n".$this->_config->get_analytics_server_ip()."/#/user/register/".$data['user_username']."/".$data['user_activation_hash']."\nOrganic.Edunet website";
+
+        if(!$mail->Send()) {
+           //echo 'Message could not be sent.';
+           //echo 'Mailer Error: ' . $mail->ErrorInfo;
+           //exit;
+        }
     }
 
     /**
