@@ -12,10 +12,6 @@ namespace Ieru\Ieruapis\Analytics;
 
 use \Ieru\Restengine\Engine\Exception\APIException;
 
-/* Constants */
-define( 'NAV_SEARCH_IP', '91.121.175.31' );
-define( 'SERVER_ANALYTICS_URL', 'http://lingua.dev' );
-
 class AnalyticsAPI
 {
     /**
