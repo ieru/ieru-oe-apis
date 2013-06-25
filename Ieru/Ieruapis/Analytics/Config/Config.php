@@ -39,16 +39,6 @@ class Config
 		return $this->_routes;
 	}
 
-      /**
-       * Returns the routes allowed in this API
-       *
-       * @return array
-       */
-      public function get_available_languages ()
-      {
-            return array( 'es', 'en' );
-      }
-
 	/**
 	 * Returns the routes allowed in this API
 	 *
@@ -66,7 +56,6 @@ class Config
 	 */
 	public function get_default_translation_services ()
 	{
-            return array();
 		return array( 'es'=>'xerox', 'fr'=>'xerox', 'de'=>'xerox', 'it'=>'xerox' );
 	}
 
