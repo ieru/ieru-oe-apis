@@ -215,6 +215,51 @@ class AnalyticsAPI
     }
 
     /**
+     * Retrieves the available services for doing translations
+     *
+     * @return array
+     */
+    public function get_providers ()
+    {
+        $services = $this->_config->get_translation_services();
+        foreach ( $services as $service )
+            $providers[] = array( 'name'=>$service );
+
+        return array( 'success'=>true, 'message'=>'Providers of translation services retrieved.', 'data'=>array( 'providers'=>$providers ) );
+    }
+
+    /**
+     * Retrieves the available languages for translation
+     *
+     * @return array
+     */
+    public function get_languages ()
+    {
+        try
+        {
+            // Create service provider adapter
+            $class_name = 'Ieru\Ieruapis\Analytics\Providers\Translation\\MicrosoftService';
+            $service = new $class_name();
+
+            // Try to connect to the translation service
+            if ( $service->check_status() )
+                $service->connect();
+            else
+                throw new APIException( $class_name.' unavailable.' );
+
+            $response = $service->languages( $this->_params );
+            foreach ( $response as $language )
+                $languages[] = array( 'language'=>$language );
+        }
+        catch ( APIException $e )
+        {
+            $e->to_json();
+        }
+
+        return array( 'success'=>true, 'message'=>'Available languages for translations retrieved.', 'data'=>array( 'languages'=>$languages ) );
+    }
+
+    /**
      * Connects with the OAuth database
      *
      * @return array is NOK | nothing if OK

@@ -24,7 +24,10 @@ class Config
 		if ( !$this->_routes )
 		{
 			$this->_routes['GET'][] = array( '/search',    'controller'=>'AnalyticsAPI#get_search' );
+
 			$this->_routes['GET'][] = array( '/translate', 'controller'=>'AnalyticsAPI#get_translation' );
+                  $this->_routes['GET'][] = array( '/translate/languages', 'controller'=>'AnalyticsAPI#get_languages' );
+                  $this->_routes['GET'][] = array( '/translate/providers', 'controller'=>'AnalyticsAPI#get_providers' );
 
 			$this->_routes['GET'][] = array( '/resources/:entry/rating',          'controller'=>'GrnetAdapter#get_rating' );
 			$this->_routes['GET'][] = array( '/resources/:entry/ratings',         'controller'=>'GrnetAdapter#get_history' );
@@ -36,6 +39,16 @@ class Config
 		return $this->_routes;
 	}
 
+      /**
+       * Returns the routes allowed in this API
+       *
+       * @return array
+       */
+      public function get_available_languages ()
+      {
+            return array( 'es', 'en' );
+      }
+
 	/**
 	 * Returns the routes allowed in this API
 	 *
@@ -43,7 +56,7 @@ class Config
 	 */
 	public function get_translation_services ()
 	{
-		return array( 'microsoft', 'celi', 'xerox', 'google' );
+		return array( 'microsoft', 'xerox' );
 	}
 
 	/**
@@ -53,6 +66,7 @@ class Config
 	 */
 	public function get_default_translation_services ()
 	{
+            return array();
 		return array( 'es'=>'xerox', 'fr'=>'xerox', 'de'=>'xerox', 'it'=>'xerox' );
 	}
 
