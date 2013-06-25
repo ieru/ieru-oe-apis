@@ -12,6 +12,9 @@ namespace Ieru\Ieruapis\Analytics\Providers\Translation;
 
 use \Ieru\Restengine\Engine\Exception\APIException;
 
+define( 'MICROSOFT_ID',     'Put here Microsoft ID' );
+define( 'MICROSOFT_SECRET', 'Put here Microsoft Secret' );
+
 class MicrosoftService implements MultilingualTranslationAdapter
 {
     /**
@@ -137,9 +140,9 @@ class MicrosoftService implements MultilingualTranslationAdapter
     private function _get_auth_header ()
     {
         // Client ID of the application.
-        $data['clientID']     = 'ce294d5d-605a-4841-a8e3-b74971689e62';
+        $data['clientID']     = MICROSOFT_ID;
         // Client Secret key of the application.
-        $data['clientSecret'] = 'PjOAWsvyv7UFVwow98DBzK+2Y+n7Ym0czxNylk+uV3o=';
+        $data['clientSecret'] = MICROSOFT_SECRET;
         // OAuth Url.
         $data['authUrl']      = 'https://datamarket.accesscontrol.windows.net/v2/OAuth2-13/';
         // Application Scope Url
