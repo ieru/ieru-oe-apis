@@ -12,6 +12,9 @@ namespace Ieru\Ieruapis\Analytics\Providers\Translation;
 
 use \Ieru\Restengine\Engine\Exception\APIException;
 
+define( 'XEROX_USERNAME', 'Put here Xerox username' );
+define( 'XEROX_PASSWORD', 'Put here Xerox password' );
+
 class XeroxService implements MultilingualTranslationAdapter
 {
     /**
@@ -48,8 +51,8 @@ class XeroxService implements MultilingualTranslationAdapter
 
 		// Connect to Xerox
 		$url = 'https://services.open.xerox.com/Auth.svc/OAuth2';
-		$post_data['username'] = 'flag';
-		$post_data['password'] = 'chaquetas';
+		$post_data['username'] = XEROX_USERNAME;
+		$post_data['password'] = XEROX_PASSWORD;
 
         $access_data = json_decode( $this->_make_curl_post( $url, $post_data ) );
 
