@@ -269,7 +269,7 @@ class Config
 	{
 		return array( 
 			'host'=>'localhost',
-			'database'=>'lomsqldat',
+			'database'=>'ieru_organic_resources',
 			'username'=>'root',
 			'password'=>''
 		);
