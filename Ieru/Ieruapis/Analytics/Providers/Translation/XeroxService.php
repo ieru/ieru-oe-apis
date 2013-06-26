@@ -12,8 +12,8 @@ namespace Ieru\Ieruapis\Analytics\Providers\Translation;
 
 use \Ieru\Restengine\Engine\Exception\APIException;
 
-define( 'XEROX_USERNAME', 'Put here Xerox username' );
-define( 'XEROX_PASSWORD', 'Put here Xerox password' );
+define( 'XEROX_USERNAME', 'flag' );
+define( 'XEROX_PASSWORD', 'chaquetas' );
 
 class XeroxService implements MultilingualTranslationAdapter
 {

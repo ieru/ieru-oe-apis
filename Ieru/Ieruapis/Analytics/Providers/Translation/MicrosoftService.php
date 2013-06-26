@@ -12,8 +12,8 @@ namespace Ieru\Ieruapis\Analytics\Providers\Translation;
 
 use \Ieru\Restengine\Engine\Exception\APIException;
 
-define( 'MICROSOFT_ID',     'Put here Microsoft ID' );
-define( 'MICROSOFT_SECRET', 'Put here Microsoft Secret' );
+define( 'MICROSOFT_ID',     'ce294d5d-605a-4841-a8e3-b74971689e62' );
+define( 'MICROSOFT_SECRET', 'PjOAWsvyv7UFVwow98DBzK+2Y+n7Ym0czxNylk+uV3o=' );
 
 class MicrosoftService implements MultilingualTranslationAdapter
 {
