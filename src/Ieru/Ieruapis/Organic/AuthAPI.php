@@ -3,7 +3,7 @@
  * Handles authentication requests
  *
  * @package     Organic API
- * @version     1.0 - 2013-04-21
+ * @version     1.1 - 2013-06-24 | 1.0 - 2013-04-21
  * 
  * @author      David Baños Expósito
  *
