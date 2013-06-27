@@ -1,0 +1,24 @@
+{
+	"name": "ieru/ieru-oe-apis",
+    "description": "PHP APIs for the Ieru REST engine and the Organic.Edunet european project",
+    "homepage": "https://github.com/ieru/ieru-oe-apis",
+	"version": "1.0.0",
+    "keywords": ["rest","apis","organic edunet","analytics"],
+	"license": "LPGL",
+    "authors": [
+        {
+            "name": "David Banos Exposito",
+            "email": "david.banos@uah.es",
+            "homepage": "http://www.ieru.org",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0"
+    },
+	"autoload": {
+        "psr-0": {
+            "Ieru": "src"
+        }
+    }
+}
