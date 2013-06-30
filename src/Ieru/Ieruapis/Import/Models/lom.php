@@ -48,7 +48,7 @@ Class Lom extends Model
 
     public function metametadata()
     {
-        return $this->hasMany('\Ieru\Ieruapis\Import\Models\Metametadata');
+        return $this->hasOne('\Ieru\Ieruapis\Import\Models\Metametadata');
     }
 
     public function relation()

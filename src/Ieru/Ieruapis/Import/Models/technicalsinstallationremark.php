@@ -1,15 +1,19 @@
 <?php
 
-// Model:'TechnicalsInstallationremark' - Database Table: 'technicals_installationremarks'
+// Model:'TechnicalsOtherplatformrequirement' - Database Table: 'technicals_otherplatformrequirements'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class TechnicalsInstallationremark extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class TechnicalsInstallationremark extends Model
 {
 
     protected $table='technicals_installationremarks';
+    protected $primaryKey = 'technicals_installationremark_id';
 
     public function technicals()
     {
-        return $this->belongsTo('Technicals');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Technical');
     }
 
 }

@@ -1,25 +1,33 @@
 <?php
 
-// Model:'Metametadata' - Database Table: 'metametadatas'
+// Model:'Lom' - Database Table: 'loms'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Metametadata extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Metametadata extends Model
 {
-
     protected $table='metametadatas';
+    protected $primaryKey = 'metametadata_id';
 
-    public function contributes()
+    public function contribute()
     {
-        return $this->hasMany('Contributes');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\Contribute');
     }
 
-    public function identifiers()
+    public function identifier()
     {
-        return $this->hasMany('Identifiers');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\Identifier');
     }
 
-    public function loms()
+    public function metametadatasschema()
     {
-        return $this->belongsTo('Loms');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\MetametadatasSchema');
+    }
+
+    public function lom()
+    {
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Lom');
     }
 
 }

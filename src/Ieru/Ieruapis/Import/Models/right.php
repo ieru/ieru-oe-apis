@@ -1,15 +1,19 @@
 <?php
 
-// Model:'Right' - Database Table: 'rights'
+// Model:'Requirement' - Database Table: 'requirements'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Right extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Right extends Model
 {
 
     protected $table='rights';
+    protected $primaryKey='right_id';
 
-    public function loms()
+    public function lom()
     {
-        return $this->hasOne('Loms');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Lom');
     }
 
 }

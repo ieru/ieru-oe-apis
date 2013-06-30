@@ -1,30 +1,34 @@
 <?php
 
-// Model:'Contribute' - Database Table: 'contributes'
+// Model:'Lom' - Database Table: 'loms'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Contribute extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Contribute extends Model
 {
 
-    protected $table='contributes';
+    protected $table = 'contributes';
+    protected $primaryKey = 'contribute_id';
 
-    public function contributesentitys()
+    public function contributesentity()
     {
-        return $this->hasMany('ContributesEntitys');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\ContributesEntity');
     }
 
-    public function loms()
+    public function lom()
     {
-        return $this->belongsTo('Loms');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Lom');
     }
 
-    public function metametadatas()
+    public function metametadata()
     {
-        return $this->belongsTo('Metametadatas');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Metametadata');
     }
 
-    public function lifecycles()
+    public function lifecycle()
     {
-        return $this->belongsTo('Lifecycles');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Lifecycle');
     }
 
 }

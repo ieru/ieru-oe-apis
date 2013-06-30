@@ -1,15 +1,19 @@
 <?php
 
-// Model:'Annotation' - Database Table: 'annotations'
+// Model:'Requirement' - Database Table: 'requirements'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Annotation extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Annotation extends Model
 {
 
     protected $table='annotations';
+    protected $primaryKey='annotation_id';
 
-    public function loms()
+    public function lom()
     {
-        return $this->belongsTo('Loms');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Annotation');
     }
 
 }

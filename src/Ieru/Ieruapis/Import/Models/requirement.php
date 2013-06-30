@@ -1,20 +1,24 @@
 <?php
 
 // Model:'Requirement' - Database Table: 'requirements'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Requirement extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Requirement extends Model
 {
 
     protected $table='requirements';
+    protected $primaryKey='requirement_id';
 
-    public function orcomposites()
+    public function orcomposite()
     {
-        return $this->hasMany('Orcomposites');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\Orcomposite');
     }
 
-    public function technicals()
+    public function technical()
     {
-        return $this->belongsTo('Technicals');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Technical');
     }
 
 }

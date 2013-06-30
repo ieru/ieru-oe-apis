@@ -1,15 +1,18 @@
 <?php
 
-// Model:'Taxon' - Database Table: 'taxons'
+// Model:'Taxonpath' - Database Table: 'taxonpaths'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Taxon extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Taxon extends Model
 {
 
     protected $table='taxons';
+    protected $primaryKey = 'taxon_id';
 
-    public function taxonpaths()
+    public function taxonpath()
     {
-        return $this->belongsTo('Taxonpaths');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Taxonpath');
     }
-
 }

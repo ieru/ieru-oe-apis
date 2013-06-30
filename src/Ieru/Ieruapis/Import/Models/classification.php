@@ -1,25 +1,28 @@
 <?php
 
-// Model:'Classification' - Database Table: 'classifications'
+// Model:'Requirement' - Database Table: 'requirements'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Classification extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Classification extends Model
 {
 
     protected $table='classifications';
+    protected $primaryKey='classification_id';
 
-    public function classificationskeywords()
+    public function classificationskeyword()
     {
-        return $this->hasMany('ClassificationsKeywords');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\ClassificationsKeyword');
     }
 
-    public function taxonpaths()
+    public function taxonpath()
     {
-        return $this->hasMany('Taxonpaths');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\Taxonpath');
     }
 
-    public function loms()
+    public function lom()
     {
-        return $this->belongsTo('Loms');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Lom');
     }
-
 }

@@ -1,15 +1,19 @@
 <?php
 
-// Model:'Orcomposite' - Database Table: 'orcomposites'
+// Model:'Requirement' - Database Table: 'requirements'
+// Model:'Lom' - Database Table: 'loms'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Orcomposite extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Orcomposite extends Model
 {
 
     protected $table='orcomposites';
+    protected $primaryKey='orcomposite_id';
 
-    public function requirements()
+    public function requirement()
     {
-        return $this->belongsTo('Requirements');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Requirement');
     }
-
 }

@@ -1,30 +1,34 @@
 <?php
 
-// Model:'Identifier' - Database Table: 'identifiers'
+// Model:'Lom' - Database Table: 'loms'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Identifier extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Identifier extends Model
 {
 
-    protected $table='identifiers';
+    protected $table = 'identifiers';
+    protected $primaryKey = 'identifier_id';
 
-    public function loms()
+    public function lom()
     {
-        return $this->belongsTo('Loms');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Lom');
     }
 
-    public function resources()
+    public function resource()
     {
-        return $this->belongsTo('Resources');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Resource');
     }
 
-    public function generals()
+    public function general()
     {
-        return $this->belongsTo('Generals');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\General');
     }
 
-    public function metametadatas()
+    public function metametadata()
     {
-        return $this->belongsTo('Metametadatas');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Metametadata');
     }
 
 }

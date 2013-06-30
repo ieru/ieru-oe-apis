@@ -1,15 +1,19 @@
 <?php
 
 // Model:'ContributesEntity' - Database Table: 'contributes_entitys'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class ContributesEntity extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class ContributesEntity extends Model
 {
 
     protected $table='contributes_entitys';
+    protected $primaryKey = 'contributes_entity_id';
 
-    public function contributes()
+    public function contribute()
     {
-        return $this->belongsTo('Contributes');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Contribute');
     }
 
 }

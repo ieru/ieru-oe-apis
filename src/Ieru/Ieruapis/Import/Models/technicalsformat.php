@@ -1,15 +1,19 @@
 <?php
 
-// Model:'TechnicalsFormat' - Database Table: 'technicals_formats'
+// Model:'Lom' - Database Table: 'loms'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class TechnicalsFormat extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class TechnicalsFormat extends Model
 {
 
     protected $table='technicals_formats';
+    protected $primaryKey = 'technicals_format_id';
 
-    public function technicals()
+    public function technical()
     {
-        return $this->belongsTo('Technicals');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Technical');
     }
 
 }

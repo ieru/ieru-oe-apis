@@ -1,20 +1,24 @@
 <?php
 
 // Model:'Lifecycle' - Database Table: 'lifecycles'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Lifecycle extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Lifecycle extends Model
 {
 
     protected $table='lifecycles';
+    protected $primaryKey = 'lifecycle_id';
 
-    public function contributes()
+    public function contribute()
     {
-        return $this->hasMany('Contributes');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\Contribute');
     }
 
-    public function loms()
+    public function lom()
     {
-        return $this->hasOne('Loms');
+        return $this->hasOne('\Ieru\Ieruapis\Import\Models\Lom');
     }
 
 }

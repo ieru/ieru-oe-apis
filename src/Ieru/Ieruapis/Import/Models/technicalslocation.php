@@ -1,15 +1,19 @@
 <?php
 
-// Model:'TechnicalsLocation' - Database Table: 'technicals_locations'
+// Model:'Lom' - Database Table: 'loms'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class TechnicalsLocation extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class TechnicalsLocation extends Model
 {
 
     protected $table='technicals_locations';
+    protected $primaryKey = 'technicals_location_id';
 
-    public function technicals()
+    public function technical()
     {
-        return $this->belongsTo('Technicals');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Technical');
     }
 
 }

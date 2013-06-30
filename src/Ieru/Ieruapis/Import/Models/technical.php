@@ -1,40 +1,43 @@
 <?php
 
-// Model:'Technical' - Database Table: 'technicals'
+// Model:'Lom' - Database Table: 'loms'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Technical extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Technical extends Model
 {
-
     protected $table='technicals';
+    protected $primaryKey = 'technical_id';
 
-    public function requirements()
+    public function requirement()
     {
-        return $this->hasMany('Requirements');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\Requirement');
     }
 
-    public function technicalsformats()
+    public function technicalsformat()
     {
-        return $this->hasMany('TechnicalsFormats');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\TechnicalsFormat');
     }
 
-    public function technicalsinstallationremarks()
+    public function technicalsinstallationremark()
     {
-        return $this->hasMany('TechnicalsInstallationremarks');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\TechnicalsInstallationremark');
     }
 
-    public function technicalslocations()
+    public function technicalslocation()
     {
-        return $this->hasMany('TechnicalsLocations');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\TechnicalsLocation');
     }
 
-    public function technicalsotherplatformrequirements()
+    public function technicalsotherplatformrequirement()
     {
-        return $this->hasMany('TechnicalsOtherplatformrequirements');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\TechnicalsOtherplatformrequirement');
     }
 
-    public function loms()
+    public function lom()
     {
-        return $this->hasOne('Loms');
+        return $this->hasOne('\Ieru\Ieruapis\Import\Models\Lom');
     }
 
 }
