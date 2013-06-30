@@ -1,45 +1,49 @@
 <?php
 
 // Model:'Educational' - Database Table: 'educationals'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class Educational extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class Educational extends Model
 {
 
     protected $table='educationals';
+    protected $primaryKey = 'educational_id';
 
-    public function educationalscontexts()
+    public function educationalscontext()
     {
-        return $this->hasMany('EducationalsContexts');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\EducationalsContext');
     }
 
-    public function educationalsdescriptions()
+    public function educationalsdescription()
     {
-        return $this->hasMany('EducationalsDescriptions');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\EducationalsDescription');
     }
 
-    public function educationalslanguages()
+    public function educationalslanguage()
     {
-        return $this->hasMany('EducationalsLanguages');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\EducationalsLanguage');
     }
 
-    public function educationalstypes()
+    public function educationalstype()
     {
-        return $this->hasMany('EducationalsTypes');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\EducationalsType');
     }
 
-    public function educationalstypicalageranges()
+    public function educationalstypicalagerange()
     {
-        return $this->hasMany('EducationalsTypicalageranges');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\EducationalsTypicalagerange');
     }
 
-    public function educationalsuserroles()
+    public function educationalsuserrole()
     {
-        return $this->hasMany('EducationalsUserroles');
+        return $this->hasMany('\Ieru\Ieruapis\Import\Models\EducationalsUserrole');
     }
 
-    public function loms()
+    public function lom()
     {
-        return $this->belongsTo('Loms');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Lom');
     }
 
 }

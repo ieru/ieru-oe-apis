@@ -1,15 +1,19 @@
 <?php
 
 // Model:'EducationalsContext' - Database Table: 'educationals_contexts'
+namespace Ieru\Ieruapis\Import\Models;
 
-Class EducationalsContext extends Eloquent
+use \Illuminate\Database\Eloquent\Model;
+
+Class EducationalsContext extends Model
 {
 
     protected $table='educationals_contexts';
+    protected $primaryKey = 'educationals_context_id';
 
-    public function educationals()
+    public function educational()
     {
-        return $this->belongsTo('Educationals');
+        return $this->belongsTo('\Ieru\Ieruapis\Import\Models\Educational');
     }
 
 }

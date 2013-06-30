@@ -33,12 +33,17 @@ use \Ieru\Ieruapis\Import\Models\TechnicalsInstallationremark;
 use \Ieru\Ieruapis\Import\Models\TechnicalsOtherplatformrequirement;
 use \Ieru\Ieruapis\Import\Models\Requirement;
 use \Ieru\Ieruapis\Import\Models\Orcomposite;
-
+use \Ieru\Ieruapis\Import\Models\Educational;
+use \Ieru\Ieruapis\Import\Models\EducationalsContext;
+use \Ieru\Ieruapis\Import\Models\EducationalsDescription;
+use \Ieru\Ieruapis\Import\Models\EducationalsLanguage;
+use \Ieru\Ieruapis\Import\Models\EducationalsType;
+use \Ieru\Ieruapis\Import\Models\EducationalsTypicalagerange;
+use \Ieru\Ieruapis\Import\Models\EducationalsUserrole;
 use \Ieru\Ieruapis\Import\Models\Right;
 use \Ieru\Ieruapis\Import\Models\Relation;
 use \Ieru\Ieruapis\Import\Models\Resource;
 use \Ieru\Ieruapis\Import\Models\Annotation;
-
 use \Ieru\Ieruapis\Import\Models\Classification;
 use \Ieru\Ieruapis\Import\Models\ClassificationsKeyword;
 use \Ieru\Ieruapis\Import\Models\Taxonpath;
@@ -80,8 +85,8 @@ class ImportAPI
     	// Load XML file
     	//$file = $_SERVER['DOCUMENT_ROOT'].'/xml/resource.xml';
         $parsed = 0;
-        //foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml_full/*/*.xml' ) as $file ) 
-        foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml/*.xml' ) as $file ) 
+        foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml_full/*/*.xml' ) as $file ) 
+        //foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml/*.xml' ) as $file ) 
         {
         	$xml = simplexml_load_file( $file );
 
@@ -352,13 +357,70 @@ class ImportAPI
             }
 
             /*------------------------------------------------------------------------------------------------
+             * EDUCATIONAL
+             *------------------------------------------------------------------------------------------------*/
+            if ( isset( $xml->educational ) )
+            {
+                foreach ( $xml->educational as $educational )
+                {
+                    $resource = new Educational();
+                    // Interactivity Level
+                    $resource->educational_interactivitylevel = $educational->interactivityLevel->value;
+                    $resource->educational_interactivitylevel_source = $educational->interactivityLevel->source;
+                    // Interactivity Type
+                    $resource->educational_interactivitytype = $educational->interactivityType->value;
+                    $resource->educational_interactivitytype_source = $educational->interactivityType->source;
+                    $lom->educational()->save( $resource );
+
+                    // Learning resource type
+                    foreach ( $educational->learningResourceType as $learningtype )
+                    {
+                        $type = new EducationalsType();
+                        $type->educationals_type_string = $learningtype->value;
+                        $type->educationals_type_source = $learningtype->source;
+                        $resource->educationalstype()->save( $type );
+                    }
+
+                    // Intended end user role
+                    foreach ( $educational->intendedEndUserRole as $learningtype )
+                    {
+                        $type = new EducationalsUserrole();
+                        $type->educationals_userrole_string = $learningtype->value;
+                        $type->educationals_userrole_source = $learningtype->source;
+                        $resource->educationalstype()->save( $type );
+                    }
+
+                    // Context
+                    foreach ( $educational->context as $learningtype )
+                    {
+                        $type = new EducationalsContext();
+                        $type->educationals_context_string = $learningtype->value;
+                        $type->educationals_context_source = $learningtype->source;
+                        $resource->educationalstype()->save( $type );
+                    }
+
+                    // Typical age range
+                    foreach ( $educational->typicalAgeRange as $learningtype )
+                    {
+                        $type = new EducationalsTypicalagerange();
+                        $type->educationals_typicalagerange_string = $learningtype->string;
+                        $type->educationals_typicalagerange_lang = $learningtype->string->attributes()['language'];
+                        $resource->educationalstype()->save( $type );
+                    }
+                }
+            }
+
+            /*------------------------------------------------------------------------------------------------
              * RIGHTS
              *------------------------------------------------------------------------------------------------*/
             if ( isset( $xml->rights ) )
             {
                 $rights = new Right();
-                $rights->right_copyright = $xml->rights->copyrightAndOtherRestrictions->value;
-                $rights->right_copyright_source = $xml->rights->copyrightAndOtherRestrictions->source;
+                if ( $xml->rights->copyrightAndOtherRestrictions->value )
+                {
+                    $rights->right_copyright = $xml->rights->copyrightAndOtherRestrictions->value;
+                    $rights->right_copyright_source = $xml->rights->copyrightAndOtherRestrictions->source;
+                }
                 if ( isset( $xml->rights->cost ) )
                 {
                     $rights->right_cost = $xml->rights->cost->value;
@@ -461,8 +523,11 @@ class ImportAPI
                         {
                             $ta = new Taxon();
                             $ta->taxon_id_string = $t->id;
-                            $ta->taxon_entry = $t->entry->string;
-                            $ta->taxon_entry_lang = $t->entry->string->attributes()['language'];
+                            if ( $t->entry->string )
+                            {
+                                $ta->taxon_entry =@ $t->entry->string;
+                                $ta->taxon_entry_lang =@ $t->entry->string->attributes()['language'];
+                            }
                             $tax->taxon()->save( $ta );
                         }
                     }
@@ -482,10 +547,17 @@ class ImportAPI
     	return array( 'success'=>true, 'message'=>'Resource imported.' );
     }
 
+    public function get ()
+    {
+        header('Content-type: application/xml');
+        $this->retrieve_resource( $this->_params['id'] );
+        die();
+    }
+
     /**
      *
      */
-    public function retrieve_resource ( $id )
+    private function retrieve_resource ( $id )
     {
     	$l = Lom::find( $id );
 
@@ -610,11 +682,67 @@ class ImportAPI
         }
 
         /*------------------------------------------------------------------------------------------------
+         * EDUCATIONAL
+         *------------------------------------------------------------------------------------------------*/
+        foreach ( $l->educational as $educational )
+        {
+            $k = array();
+
+            if ( $educational->educational_interactivitytype )
+            {
+                $k['interactivityType']['source'] = $educational->educational_interactivitytype_source;
+                $k['interactivityType']['value'] = $educational->educational_interactivitytype;
+            }
+            if ( $educational->educational_interactivitylevel )
+            {
+                $k['interactivityLevel']['source'] = $educational->educational_interactivitylevel_source;
+                $k['interactivityLevel']['value'] = $educational->educational_interactivitylevel;
+            }
+
+            foreach ( $educational->educationalsuserrole as $e )
+            {
+                $edu = array();
+                $edu['source'] = $e->educationals_userrole_source;
+                $edu['value'] = $e->educationals_userrole_string;
+                $k['intendedEndUserRole'][] = $edu;
+            }
+
+            foreach ( $educational->educationalstype as $e )
+            {
+                $edu = array();
+                $edu['source'] = $e->educationals_type_source;
+                $edu['value'] = $e->educationals_type_string;
+                $k['learningResourceType'][] = $edu;
+            }
+
+            foreach ( $educational->educationalscontext as $e )
+            {
+                $edu = array();
+                $edu['source'] = $e->educationals_context_source;
+                $edu['value'] = $e->educationals_context_string;
+                $k['context'][] = $edu;
+            }
+
+            foreach ( $educational->educationalstypicalagerange as $e )
+            {
+                $edu = array();
+                $edu['string']['@value'] = $e->educationals_typicalagerange_string;
+                $edu['string']['@attributes']['language'] = $e->educationals_typicalagerange_lang;
+                $k['typicalAgeRange'][] = $edu;
+            }
+
+            $r['educational'][] = $k;
+        }
+
+        /*------------------------------------------------------------------------------------------------
          * RIGHTS
          *------------------------------------------------------------------------------------------------*/
-        $r['rights']['copyrightAndOtherRestrictions'] =@ array( 'source'=>$l->right->right_copyright_source, 'value'=>$l->right->right_copyright );
-        $r['rights']['cost'] =@ array( 'source'=>$l->right->right_cost_source, 'value'=>$l->right->right_cost );
-        $r['rights']['description']['string'][] =@ array( '@attributes'=>array( 'language'=>$l->right->right_description_lang ), '@value'=>$l->right->right_description );
+        if ( $l->right->right_copyright )
+            $r['rights']['copyrightAndOtherRestrictions'] =@ array( 'source'=>$l->right->right_copyright_source, 'value'=>$l->right->right_copyright );
+        if ( $l->right->right_cost )
+            $r['rights']['cost'] =@ array( 'source'=>$l->right->right_cost_source, 'value'=>$l->right->right_cost );
+        if ( $l->right->right_description )
+            $r['rights']['description']['string'][] =@ array( '@attributes'=>array( 'language'=>$l->right->right_description_lang ), '@value'=>$l->right->right_description );
 
         /*------------------------------------------------------------------------------------------------
          * RELATIONS
@@ -670,13 +798,18 @@ class ImportAPI
             {
                 $tp = array();
                 $tp['source']['string']['@value'] =@ $taxonp->taxonpath_source; 
-                $tp['source']['string']['@attributes']['language'] =@ $taxonp->taxonpath_source_lang;
+                if ( $taxonp->taxonpath_source_lang )
+                    $tp['source']['string']['@attributes']['language'] =@ $taxonp->taxonpath_source_lang;
                 foreach ( $taxonp->taxon as $t )
                 {
                     $tx = array();
                     $tp['taxon']['id'] = $t->taxon_id_string;
-                    $tp['taxon']['entry']['string']['@value'] =@ $t->taxon_entry;
-                    $tp['taxon']['entry']['string']['@attributes']['language'] =@ $t->taxon_entry_lang;
+                    if ( $t->taxon_entry )
+                    {
+                        $tp['taxon']['entry']['string']['@value'] =@ $t->taxon_entry;
+                        if ( $t->taxon_entry_lang )
+                            $tp['taxon']['entry']['string']['@attributes']['language'] =@ $t->taxon_entry_lang;
+                    }
                 }
                 $k['taxonPath'][] = $tp;
             }
