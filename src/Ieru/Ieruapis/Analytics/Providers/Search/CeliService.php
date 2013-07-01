@@ -25,7 +25,7 @@ class CeliService implements MultilingualSearchAdapter
         $request_uri = 'http://demo.celi.it:9095/OrganicLinguaSolr/select?indent=on&version=2.2'.
                        '&q='.urlencode( html_entity_decode( $data['text'] ) ).'&start='.$data['offset'].
                        '&rows='.$data['limit'].
-                       '&fl=technicalLocation%2Cscore&wt=json&explainOther=&hl.fl='.
+                       '&fl=general_identifier%2Cscore&wt=json&explainOther=&hl.fl='.
                        '&facet=true&facet.field=educationalContext&facet.field=language&facet.field=technicalFormat'.
                        '&facet.field=educationalRole'.
                        '&fq='.urlencode( $filters );
@@ -70,7 +70,7 @@ class CeliService implements MultilingualSearchAdapter
 
         foreach ( $data->response->docs as $doc )
         {
-            $response['data']['resources'][] = array( 'resource'=>$doc->technicalLocation[0] );
+            $response['data']['resources'][] = array( 'resource'=>$doc->general_identifier[0] );
         }
         $response['data']['facets'] = array();
 

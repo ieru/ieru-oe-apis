@@ -30,12 +30,10 @@ class AuthAPI
         $this->_config = $config;
 
         // Connect with the IEEE LOM database that stores the Organic.Edunet resources
-        try
-        {
-            $this->_db =& LOMDatabase::get_db( $config->get_db_info() );
-        }
-        catch ( APIException $e )
-        {
+        $con = $config->get_db_info();
+        try{
+            $db = new \PDO( 'mysql:host='.$con['host'].';dbname='.$con['database'], $con['username'], $con['password'] );
+        }catch ( APIException $e ){
             $e->to_json();
         }
 

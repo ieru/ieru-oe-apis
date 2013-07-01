@@ -23,8 +23,9 @@ class Config
 	{
 		if ( !$this->_routes )
 		{
-			$this->_routes['GET'][] = array( '/import',    'controller'=>'ImportAPI#import' );
+			$this->_routes['GET'][] = array( '/import',		'controller'=>'ImportAPI#import' );
 			$this->_routes['GET'][] = array( '/get/:id',    'controller'=>'ImportAPI#get' );
+			$this->_routes['GET'][] = array( '/check',      'controller'=>'ImportAPI#check' );
 		}
 		return $this->_routes;
 	}

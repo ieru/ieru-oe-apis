@@ -75,6 +75,45 @@ class ImportAPI
     /**
      *
      */
+    public function check ()
+    {
+        $bad = 0;
+
+        foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml_full/*/*.xml' ) as $file ) 
+        {
+            $name = preg_replace( '@/users/david/sites/github/ieru-api-server/xml_full@si', '', $file );
+
+            $check = array(
+                            'general.identifier',
+                            'general.language',
+                            'technical.location',
+                        );
+
+            libxml_use_internal_errors(true);
+            $xml = simplexml_load_file( $file );
+            if ( $xml !== false )
+            {
+                foreach ( $check as $field )
+                {
+                    $tags = explode( '.', $field );
+                    if ( !isset( $xml->$tags[0]->$tags[1] ) )
+                        echo "Resource without field: {$field} \t".$name."\t ".++$bad."\n";
+                }
+            }
+            else
+            {
+                foreach(libxml_get_errors() as $error)
+                {
+                    //echo "Error: \t".$name."\t ".++$bad."\n";
+                }
+            }
+
+        }
+    }
+
+    /**
+     *
+     */
     public function import ()
     {
         // Avoid problems with exceeding max time of execution of script
