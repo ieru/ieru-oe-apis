@@ -112,7 +112,7 @@ class Config
        */
       public function get_analytics_server_ip ()
       {
-            return 'http://edunet.dev';
+            return 'http://api.dev';
       }
 
       /**

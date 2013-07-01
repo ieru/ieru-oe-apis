@@ -18,6 +18,43 @@
 namespace Ieru\Ieruapis\Organic; 
 
 use \Ieru\Restengine\Engine\Exception\APIException;
+use \Ieru\Ieruapis\Import\Models\Lom;
+use \Ieru\Ieruapis\Import\Models\General;
+use \Ieru\Ieruapis\Import\Models\GeneralsTitle;
+use \Ieru\Ieruapis\Import\Models\GeneralsLanguage;
+use \Ieru\Ieruapis\Import\Models\GeneralsDescription;
+use \Ieru\Ieruapis\Import\Models\GeneralsKeyword;
+use \Ieru\Ieruapis\Import\Models\GeneralsKeywordsText;
+use \Ieru\Ieruapis\Import\Models\GeneralsCoverage;
+use \Ieru\Ieruapis\Import\Models\GeneralsCoveragesText;
+use \Ieru\Ieruapis\Import\Models\Identifier;
+use \Ieru\Ieruapis\Import\Models\Lifecycle;
+use \Ieru\Ieruapis\Import\Models\Contribute;
+use \Ieru\Ieruapis\Import\Models\ContributesEntity;
+use \Ieru\Ieruapis\Import\Models\Metametadata;
+use \Ieru\Ieruapis\Import\Models\MetametadatasSchema;
+use \Ieru\Ieruapis\Import\Models\Technical;
+use \Ieru\Ieruapis\Import\Models\TechnicalsFormat;
+use \Ieru\Ieruapis\Import\Models\TechnicalsLocation;
+use \Ieru\Ieruapis\Import\Models\TechnicalsInstallationremark;
+use \Ieru\Ieruapis\Import\Models\TechnicalsOtherplatformrequirement;
+use \Ieru\Ieruapis\Import\Models\Requirement;
+use \Ieru\Ieruapis\Import\Models\Orcomposite;
+use \Ieru\Ieruapis\Import\Models\Educational;
+use \Ieru\Ieruapis\Import\Models\EducationalsContext;
+use \Ieru\Ieruapis\Import\Models\EducationalsDescription;
+use \Ieru\Ieruapis\Import\Models\EducationalsLanguage;
+use \Ieru\Ieruapis\Import\Models\EducationalsType;
+use \Ieru\Ieruapis\Import\Models\EducationalsTypicalagerange;
+use \Ieru\Ieruapis\Import\Models\EducationalsUserrole;
+use \Ieru\Ieruapis\Import\Models\Right;
+use \Ieru\Ieruapis\Import\Models\Relation;
+use \Ieru\Ieruapis\Import\Models\Resource;
+use \Ieru\Ieruapis\Import\Models\Annotation;
+use \Ieru\Ieruapis\Import\Models\Classification;
+use \Ieru\Ieruapis\Import\Models\ClassificationsKeyword;
+use \Ieru\Ieruapis\Import\Models\Taxonpath;
+use \Ieru\Ieruapis\Import\Models\Taxon;
 
 class OrganicAPI
 {
@@ -48,6 +85,18 @@ class OrganicAPI
 
         $this->_lang     = $config->get_iso_lang();
         $this->_autolang = $config->get_autolang();
+
+        // Create database connection
+        \Capsule\Database\Connection::make('main', array(
+            'driver'    => 'mysql',
+            'host'      => 'localhost',
+            'database'  => 'IEEE-LOM',
+            'username'  => 'root',
+            'password'  => '',
+            'collation' => 'utf8_general_ci',
+            'prefix'    => '',
+            'charset'    => 'utf8'
+        ), true);
     }
     
     /**
@@ -61,7 +110,7 @@ class OrganicAPI
         $url = $this->_config->get_analytics_server_ip().'/api/analytics/search';
         $data = $this->_curl_request( $url, $this->_params );
         $resources = json_decode( $data, true );
-        //print_r( $resources ); die();
+
         # Celi service not available
         if ( isset( $resources['success'] ) AND !$resources['success'] )
         {
@@ -80,7 +129,7 @@ class OrganicAPI
         else
         {
             # Get the metadata information of the resource
-            $records =& $this->_get_lom_data_of_resources( $resources['data']['resources'], $this->_params['lang'] );
+            $records =& $this->_get_lom_data_of_resources( $resources['data']['resources'] );
             if ( count( $records ) > 0 )
             {
                 # Parses the facets for filtering the results
@@ -322,121 +371,55 @@ class OrganicAPI
      * @param   array   $uris   The identifiers of the resources to search in LOM database.
      * @return  array
      */
-    private function & _get_lom_data_of_resources ( &$uris, $language )
+    private function & _get_lom_data_of_resources ( &$uris )
     {
-        $results = array();
-
-        // ÑAPA ALERT
-        $napa_lang = $this->_config->get_resources_langs();
-        // ÑAPA ALERT        
+        $results = array();  
 
         # Loop the uris for getting the local LOM resource info
         if ( $uris )
         {
             foreach ( $uris as $uri ) 
             {
-                if ( !is_array( $uri ) )
-                {
-                    $array['resource'][0] = $uri;
-                    $uri = $array;
-                }
+                $lom = array();
 
-                try 
-                {
-                    # Picks up the resource in both english (always must be in english) and the user language. Will return one or two rows.
-                    $sql = 'SELECT  string.Text as title, strings.Text as description, technical.format, identifier.entry_metametadata as entry, 
-                                    agerange.Text as age_range, identifier.entry as resource, string.language as info_lang,
-                                    general.language as language, string.FK_general as id, technical.location as location
-                            FROM general
-                            INNER JOIN identifier           ON general.FK_lom           = identifier.FK_general
-                            INNER JOIN string               ON string.FK_general        = identifier.FK_general
-                            INNER JOIN technical            ON identifier.FK_general    = technical.FK_lom
-                            INNER JOIN string as strings    ON string.FK_general        = strings.FK_general
-                            INNER JOIN string as agerange   ON string.FK_general        = agerange.FK_typicalAgeRange 
-                            WHERE ( identifier.entry = ? OR identifier.entry_metametadata = ? OR identifier.entry = ? OR identifier.entry_metametadata = ?) 
-                                AND string.language = strings.language AND string.FK_title is not null
-                            GROUP BY string.language';
+                $resource = Lom::with(array('Technical', 'General.GeneralsTitle', 'General.GeneralsDescription', 
+                                'General.GeneralsLanguage','General.GeneralsKeyword.generalskeywordtext',
+                                'Educational.EducationalsTypicalagerange', 'Metametadata'))
+                            ->join('technicals', 'loms.lom_id','=','technicals.lom_id')
+                            ->join('technicals_locations', 'technicals.technical_id','=','technicals_locations.technical_id')
+                            ->where('technicals_locations.technicals_location_text','=',$uri['resource'])
+                            ->get(array( 'loms.lom_id', 'technicals_locations.technicals_location_text') )[0];
 
-                    $stmt = $this->_db->prepare( $sql );
+                $lom['id'] = $resource->lom_id;
+                $lom['location'] = $resource->technicals_location_text;
 
-                    if ( count( $uri['resource'] ) == 1 )
-                        $stmt->execute( array( trim( $uri['resource'][0] ), trim( $uri['resource'][0] ), trim( $uri['resource'][0] ), trim( $uri['resource'][0] ) ) );
-                    else
-                        $stmt->execute( array( trim( $uri['resource'][0] ), trim( $uri['resource'][1] ), trim( $uri['resource'][1] ), trim( $uri['resource'][0] ) ) );
-                    $fetches = $stmt->fetchAll( \PDO::FETCH_ASSOC );
-                }
-                # If an exception raises, return an empty array
-                catch ( \Exception $e ) 
-                {
-                    die( $e->getMessage() );
-                }
+                foreach ( $resource->general->generalslanguage as $lang )
+                    $lom['languages'][] = $lang->generals_language_lang;
+                foreach ( $resource->educational as $edu )
+                    foreach ( $edu->educationalstypicalagerange as $age )
+                        $lom['age_range'][] = $age->educationals_typicalagerange_string;
 
-                if ( $fetches )
-                {
-                    # Fetch keywords
-                    $sql = 'SELECT language, Text, FK_keyword
-                            FROM string
-                            WHERE FK_general = ? AND FK_keyword > 0';
-                    $stmt = $this->_db->prepare( $sql );
-                    $stmt->execute( array( $fetches[0]['id'] ) );
-                    $keywords = $stmt->fetchAll( \PDO::FETCH_ASSOC );
+                // Set titles: if it has no language set, use metametadata language identifier
+                foreach ( $resource->general->generalstitle as $title )
+                    if ( $title->generals_title_lang )
+                        $lom['texts'][$title->generals_title_lang]['title'] = $title->generals_title_string;
+                    elseif ( $resource->metametadata->metametadata_lang )
+                        $lom['texts'][$resource->metametadata->metametadata_lang]['title'] = $title->generals_title_string;
+                // Set descriptions: if it has no language set, use metametadata language identifier
+                foreach ( $resource->general->generalsdescription as $description )
+                    if ( $description->generals_description_lang )
+                        $lom['texts'][$description->generals_description_lang]['description'] = $description->generals_description_string;
+                    elseif ( $resource->metametadata->metametadata_lang )
+                        $lom['texts'][$resource->metametadata->metametadata_lang]['description'] = $description->generals_description_string;
+                // Set keywords: if it has no language set, use metametadata language identifier
+                foreach ( $resource->general->generalskeyword as $keyword )
+                    foreach ( $keyword->generalskeywordtext as $text )
+                        if ( $text->generals_keywords_text_lang )
+                            $lom['texts'][$text->generals_keywords_text_lang]['keyword'][] = $text->generals_keywords_text_string;
+                        elseif ( $resource->metametadata->metametadata_lang )
+                            $lom['texts'][$resource->metametadata->metametadata_lang]['keyword'][] = $text->generals_keywords_text_string;
 
-                    # Order keywords
-                    $keytemp = array();
-                    foreach ( $keywords as $keyword )
-                    {
-                        foreach ( explode( ',', $keyword['Text'] ) as $t )
-                        {
-                            $keytemp[$keyword['language']][] = trim( $t );
-                        }
-                    }
-
-                    # Selects the result that is in the user language, or english by default.
-                    $temp = $fetches[0];
-                    foreach ( $fetches as &$fetched )
-                    {
-                        $temp['texts'][$fetched['info_lang']]['lang'] = $fetched['info_lang'];
-                        $temp['texts'][$fetched['info_lang']]['type_class'] = 'human-translation';
-                       @$temp['texts'][$fetched['info_lang']]['type'] = 'human';
-                        $temp['texts'][$fetched['info_lang']]['title'] = $fetched['title'];
-                       @$temp['texts'][$fetched['info_lang']]['keywords'] = $keytemp[$fetched['info_lang']];
-
-                        # Fetch description
-                        $sql = 'SELECT Text as description
-                                FROM string
-                                WHERE FK_general = ? AND language = ? AND FK_description is not null';
-                        $stmt = $this->_db->prepare( $sql );
-                        $stmt->execute( array( $fetches[0]['id'], $fetched['info_lang'] ) );
-                        $description = $stmt->fetchAll( \PDO::FETCH_ASSOC );
-
-                        if ( $description )
-                            $temp['texts'][$fetched['info_lang']]['description'] = $description[0]['description'];
-                    }
-                    # Add automatic language translations
-                    foreach ( $this->_autolang as $autolang )
-                    {
-                        if ( !array_key_exists( $autolang, $temp['texts'] ) )
-                        {
-                            $temp['texts'][$autolang]['lang'] = $autolang;
-                            $temp['texts'][$autolang]['type_class'] = 'automatic-translation';
-                            $temp['texts'][$autolang]['type'] = 'automatic';
-                            $temp['texts'][$autolang]['title'] = '';
-                            $temp['texts'][$autolang]['description'] = '';
-                            $temp['texts'][$autolang]['keywords'] = '';
-                        }
-                    }
-                    ksort( $temp['texts'] );
-                    unset( $temp['title'], $temp['description'], $temp['keyword'], $temp['info_lang'] );
-                    #$temp['entry_link'] = str_replace( '/', '@', $temp['entry'] );
-                    // ÑAPA ALERT
-                    if ( array_key_exists( $temp['location'], $napa_lang ) )
-                        $temp['napa_langs'] = $napa_lang[$temp['location']];
-                    else
-                        $temp['napa_langs'] = array( $temp['language'] );
-                    // ÑAPA ALERT
-                    $results[] = $temp;
-                }
-
+                $results[] = $lom;
             }
         }
         return $results;

@@ -88,13 +88,21 @@ class ImportAPI
         foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml_full/*/*.xml' ) as $file ) 
         //foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml/*.xml' ) as $file ) 
         {
-        	$xml = simplexml_load_file( $file );
+            $name = preg_replace( '@/users/david/sites/github/ieru-api-server/xml_full@si', '', $file );
 
-            echo $file;
+            if ( $finder = Lom::where('lom_original_file_name', '=', $name)->get()->toArray() )
+            {
+                echo "encontrado: ".$name."\n";
+                continue;
+            }
+
+            echo $name;
+            $xml = simplexml_load_file( $file );
+
 
         	// Create new LOM object
         	$lom = new Lom();
-            $lom->lom_original_file_name = preg_replace( '@/users/david/sites/github/ieru-api-server/xml_full@si', '', $file );
+            $lom->lom_original_file_name = $name;
         	$lom->save();
 
         	/*------------------------------------------------------------------------------------------------
@@ -129,12 +137,15 @@ class ImportAPI
 
         	// Parse General Descriptions
         	if ( isset( $xml->general->description ) )
-        	foreach ( $xml->general->description->string as $desc )
+        	foreach ( $xml->general->description as $descri )
         	{
-    	    	$gen_d = new GeneralsDescription();
-    	    	$gen_d->generals_description_string = $desc;
-    	    	$gen_d->generals_description_lang = $desc->attributes()['language'];
-    	    	$general->generalsdescription()->save( $gen_d );
+                foreach ( $descri->string as $desc )
+                {
+        	    	$gen_d = new GeneralsDescription();
+        	    	$gen_d->generals_description_string = $desc;
+        	    	$gen_d->generals_description_lang = $desc->attributes()['language'];
+        	    	$general->generalsdescription()->save( $gen_d );
+                } 
         	}
 
         	// Parse General Keywords
@@ -370,7 +381,32 @@ class ImportAPI
                     // Interactivity Type
                     $resource->educational_interactivitytype = $educational->interactivityType->value;
                     $resource->educational_interactivitytype_source = $educational->interactivityType->source;
+                    // Difficulty
+                    if ( isset( $educational->difficulty ) )
+                    {
+                        $resource->educational_difficulty = $educational->difficulty->value;
+                        $resource->educational_difficulty_source = $educational->difficulty->source;
+                    }
+                    // semanticDensity
+                    if ( isset( $educational->semanticDensity ) )
+                    {
+                        $resource->educational_semanticdensity = $educational->semanticDensity->value;
+                        $resource->educational_semanticdensity_source = $educational->semanticDensity->source;
+                    }
+                    // Learning time
+                    if ( isset( $educational->typicalLearningTime ) )
+                    {
+                        $resource->educational_typicallearningtime = $educational->typicalLearningTime->duration;
+                    }
                     $lom->educational()->save( $resource );
+
+                    // Language
+                    foreach ( $educational->language as $learningtype )
+                    {
+                        $type = new EducationalsLanguage();
+                        $type->educationals_language_string = $learningtype;
+                        $resource->educationalstype()->save( $type );
+                    }
 
                     // Learning resource type
                     foreach ( $educational->learningResourceType as $learningtype )
@@ -405,6 +441,14 @@ class ImportAPI
                         $type = new EducationalsTypicalagerange();
                         $type->educationals_typicalagerange_string = $learningtype->string;
                         $type->educationals_typicalagerange_lang = $learningtype->string->attributes()['language'];
+                        $resource->educationalstype()->save( $type );
+                    }
+                    // Typical age range
+                    foreach ( $educational->description as $learningtype )
+                    {
+                        $type = new EducationalsDescription();
+                        $type->educationals_description_string = $learningtype->string;
+                        $type->educationals_description_lang = $learningtype->string->attributes()['language'];
                         $resource->educationalstype()->save( $type );
                     }
                 }
@@ -534,16 +578,13 @@ class ImportAPI
                 }
             }
 
-            // Force garbage collection for big imports
-            //unset( $lom, $general, $metadata, $lifecycle, $technical, $xml );
-            //gc_collect_cycles();
             echo " \t|| no. ", ++$parsed, " \t|| Lomid: ", $general->lom_id, "\n";
         }
 
         /*------------------------------------------------------------------------------------------------
          * END OF SCRIPT
          *------------------------------------------------------------------------------------------------*/
-        $this->retrieve_resource( $general->lom_id );
+        //$this->retrieve_resource( $general->lom_id );
     	return array( 'success'=>true, 'message'=>'Resource imported.' );
     }
 
@@ -560,8 +601,6 @@ class ImportAPI
     private function retrieve_resource ( $id )
     {
     	$l = Lom::find( $id );
-
-    	//$r['lom'] = $l->lom_id;
 
     	/*------------------------------------------------------------------------------------------------
     	 * GENERAL
@@ -693,10 +732,28 @@ class ImportAPI
                 $k['interactivityType']['source'] = $educational->educational_interactivitytype_source;
                 $k['interactivityType']['value'] = $educational->educational_interactivitytype;
             }
+
             if ( $educational->educational_interactivitylevel )
             {
                 $k['interactivityLevel']['source'] = $educational->educational_interactivitylevel_source;
                 $k['interactivityLevel']['value'] = $educational->educational_interactivitylevel;
+            }
+
+            if ( $educational->educational_difficulty )
+            {
+                $k['difficulty']['source'] = $educational->educational_difficulty_source;
+                $k['difficulty']['value'] = $educational->educational_difficulty;
+            }
+
+            if ( $educational->educational_semanticdensity )
+            {
+                $k['semanticDensity']['source'] = $educational->educational_semanticdensity_source;
+                $k['semanticDensity']['value'] = $educational->educational_semanticdensity;
+            }
+
+            if ( $educational->educational_typicallearningtime )
+            {
+                $k['typicalLearningTime']['duration'] = $educational->educational_typicallearningtime;
             }
 
             foreach ( $educational->educationalsuserrole as $e )
@@ -705,6 +762,13 @@ class ImportAPI
                 $edu['source'] = $e->educationals_userrole_source;
                 $edu['value'] = $e->educationals_userrole_string;
                 $k['intendedEndUserRole'][] = $edu;
+            }
+
+            foreach ( $educational->educationalslanguage as $e )
+            {
+                $edu = array();
+                $edu['@value'] = $e->educationals_language_string;
+                $k['language'][] = $edu;
             }
 
             foreach ( $educational->educationalstype as $e )
@@ -729,6 +793,14 @@ class ImportAPI
                 $edu['string']['@value'] = $e->educationals_typicalagerange_string;
                 $edu['string']['@attributes']['language'] = $e->educationals_typicalagerange_lang;
                 $k['typicalAgeRange'][] = $edu;
+            }
+
+            foreach ( $educational->educationalsdescription as $e )
+            {
+                $edu = array();
+                $edu['string']['@value'] = $e->educationals_description_string;
+                $edu['string']['@attributes']['language'] = $e->educationals_description_lang;
+                $k['description'][] = $edu;
             }
 
             $r['educational'][] = $k;
@@ -819,7 +891,7 @@ class ImportAPI
         /*------------------------------------------------------------------------------------------------
          * PRINT XML
          *------------------------------------------------------------------------------------------------*/
-		$xml = Array2XML::createXML('lom', $r);
+		$xml = Array2XML::createXML('lom', $r );
 		echo $xml->saveXML();
 
     	//return $r;
