@@ -37,7 +37,7 @@ class OrganicAPI
         \Capsule\Database\Connection::make('main', array(
             'driver'    => 'mysql',
             'host'      => 'localhost',
-            'database'  => 'IEEE-LOM',
+            'database'  => 'ieru_organic_resources',
             'username'  => 'root',
             'password'  => '',
             'collation' => 'utf8_general_ci',
