@@ -87,6 +87,7 @@ class ImportAPI
                             'general.identifier',
                             'general.language',
                             'technical.location',
+                            'classification.purpose',
                         );
 
             libxml_use_internal_errors(true);
