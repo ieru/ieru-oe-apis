@@ -227,7 +227,7 @@ class OrganicAPI
                             ->join('generals', 'loms.lom_id','=','generals.lom_id')
                             ->join('identifiers', 'generals.general_id','=','identifiers.general_id')
                             ->where('identifiers.identifier_entry','=',$uri['resource'])
-                            ->get(array( 'loms.lom_id' ) )[0];
+                            ->first(array( 'loms.lom_id' ) );
 
             $this->_retrieve_basic_data( $lom, $resource );
             $this->_add_automatic_languages( $lom );
