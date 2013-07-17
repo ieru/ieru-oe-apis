@@ -11,6 +11,8 @@
 namespace Ieru\Ieruapis\Organic; 
 
 use \Ieru\Restengine\Engine\Exception\APIException;
+use Ieru\Ieruapis\Organic\Models\User;
+use Ieru\Ieruapis\Organic\Models\Token;
 
 class AuthAPI
 {
@@ -28,14 +30,6 @@ class AuthAPI
     {
         $this->_params = $params;
         $this->_config = $config;
-
-        // Connect with the IEEE LOM database that stores the Organic.Edunet resources
-        $con = $config->get_db_info();
-        try{
-            $db = new \PDO( 'mysql:host='.$con['host'].';dbname='.$con['database'], $con['username'], $con['password'] );
-        }catch ( APIException $e ){
-            $e->to_json();
-        }
 
         $this->_lang     = $config->get_iso_lang();
         $this->_autolang = $config->get_autolang();
@@ -56,36 +50,33 @@ class AuthAPI
         $this->_connect_oauth();
 
         // Query the database with the username and password given by the user
-        $sql = 'SELECT user_id, user_username, user_password 
-                FROM users 
-                WHERE user_username = ?
-                LIMIT 1';
-
-        $stmt = $this->_oauthdb->prepare( $sql );
-        $stmt->execute( array( $this->_params['username'] ) );
+        $user = User::where('user_username', '=', $this->_params['username'])->first();
         
         // Wrong username
-        if ( !$user = $stmt->fetch( \PDO::FETCH_ASSOC ) )
+        if ( !is_object( $user ) )
             return array( 'success'=>false, 'message'=>'Wrong username or password' );
 
         // Separate user password
-        if ( !$this->_check_password( $this->_params['password'], $user['user_password'] ) )
+        if ( !$this->_check_password( $this->_params['password'], $user->user_password ) )
             return array( 'success'=>false, 'message'=>'Wrong username or password.' );
 
         // Try to retrieve token for IP and active session, creating a new token if none
-        // User can only be logged from one place at a time        
-        if ( !$token = $this->_get_token( $user ) )
+        // User can only be logged from one place at a time
+        $token = $this->_get_token( $user );
+        if ( !is_object( $token ) )
         {
-            $token = $this->_generate_token( $user );
-            $stmt = $this->_oauthdb->prepare( 'UPDATE tokens SET token_active = 0 WHERE user_id = ?' );
-            $stmt->execute( array( $user['user_id'] ) );
-            $stmt = $this->_oauthdb->prepare( 'INSERT INTO tokens SET token_chars = ?, user_id = ?, token_active = ?, token_ip = ?' );
-            $stmt->execute( array( $token, $user['user_id'], 1, $_SERVER['REMOTE_ADDR'] ) );
+            Token::where('user_id', '=', $user['user_id'])->update(array('token_active'=>0));
+            $token_chars = $this->_generate_token( $user );
+            $token = new Token();
+            $token->token_chars = $token_chars;
+            $token->user_id = $user['user_id'];
+            $token->token_active = 1;
+            $token->token_ip = $_SERVER['REMOTE_ADDR'];
+            $token->save();
         }
 
         // Return the token
-        $data = array( 'success'=>true, 'message'=>'Correct credentials.', 'data'=>array( 'usertoken'=>$token ) );
-        return $data;
+        return array( 'success'=>true, 'message'=>'Correct credentials.', 'data'=>array( 'usertoken'=>$token->token_chars ) );
     }
 
     /**
@@ -101,12 +92,21 @@ class AuthAPI
         $this->_connect_oauth();
 
         // Update the usertoken to inactive
-        $stmt = $this->_oauthdb->prepare( 'UPDATE tokens SET token_active = 0 WHERE token_chars = ?' );
-        $stmt->execute( array( $_COOKIE['usertoken'] ) );
+        $token = Token::where('token_chars', '=', @$_COOKIE['usertoken'])->first();
+        if ( is_object( $token ) )
+        {
+            $token->token_active = 0;
+            $token->save();
+            $return = array( 'success'=>true, 'message'=>'Session logged out.' );
+        }
+        else
+        {
+            // Return true anyway for deleting cookies on the browser
+            $return = array( 'message'=>true, 'message'=>'Invalid token.' );
+        }
 
-        // Destroy session and related data
-        if ( !session_id() )
-            session_start();
+        // Destroy session and related data even if there was a problem with the token
+        session_start();
 
         session_regenerate_id( true );
 
@@ -115,8 +115,7 @@ class AuthAPI
 
         session_unset();
         session_destroy();
-
-        return array( 'success'=>true, 'message'=>'Session logged out.' );
+        return $return;
     }
 
     /**
@@ -146,32 +145,29 @@ class AuthAPI
         if ( $connect = $this->_connect_oauth() )
             return $connect;
 
-        // Format data
-        $data['user_username'] = $_POST['form-register-username'];
-        $data['user_password'] = $this->_hash_password( $_POST['form-register-password'] );
-        $data['user_email']    = $_POST['form-register-email'];
-        $data['user_name']     = $_POST['form-register-name'];
-        $data['user_active']   = 0;
-        $data['user_activation_hash'] = md5( $data['user_password'] );
-
-        $params = array();
-        foreach ( $data as $key=>$val )
-        {
-            $params[] = $key.' = ?';
-            $values[] = $val;
-        }
-        $p = implode( ',', $params );
-
         // Query the database with the username and password given by the user
-        $stmt = $this->_oauthdb->prepare( 'INSERT INTO users SET '.$p );
-        $stmt->execute( $values );
+        $user = new User();
+        $user->user_username = $_POST['form-register-username'];
+        $user->user_password = $this->_hash_password( $_POST['form-register-password'] );
+        $user->user_email    = $_POST['form-register-email'];
+        $user->user_name     = $_POST['form-register-name'];
+        $user->user_active   = 0;
+        $user->user_activation_hash = md5( $user['user_password'] );
         
-        if ( $stmt->rowCount() > 0 )
+        try
         {
-            $this->_send_activation_email( $data );
-            return array( 'success'=>true, 'message'=>'User created.', 'data'=>$data );
+            if ( $user->save() )
+            {
+                $data = $user->toarray();
+                $this->_send_activation_email( $data );
+                return array( 'success'=>true, 'message'=>'User created.' );
+            }
+            else
+            {
+                return array( 'success'=>false, 'message'=>'There is already an user with that username or email.' );
+            }
         }
-        else
+        catch ( \Exception $e )
         {
             return array( 'success'=>false, 'message'=>'There is already an user with that username or email.' );
         }
@@ -196,18 +192,32 @@ class AuthAPI
         if ( $connect = $this->_connect_oauth() )
             return $connect;
 
-        // Query the database with the username and password given by the user
-        $sql = 'UPDATE users 
-                SET user_active = 1, user_activation_hash = ""
-                WHERE user_activation_hash = ? AND user_username = ? AND user_active = 0';
-        $stmt = $this->_oauthdb->prepare( $sql );
-        $stmt->execute( array( $this->_params['hash'], $this->_params['user'] ) );
+        try
+        {
+            // Query the database with the username and password given by the user
+            $user = User::where('user_activation_hash', '=', $this->_params['hash'])
+                        ->where('user_username', '=', $this->_params['user'])
+                        ->where('user_active', '=', 0)
+                        ->first();
 
-        // If the query affects at least one row, the user has been activated
-        if ( $stmt->rowCount() > 0 )
-            return array( 'success'=>true, 'message'=>'User activated.' );
-        else
-            return array( 'success'=>false, 'message'=>'User not found or already active.' );
+            // If the query affects at least one row, the user has been activated
+            if ( $user->count() )
+            {
+                $user->user_active = 1;
+                $user->user_activation_hash = '';
+                $user->save();
+                return array( 'success'=>true, 'message'=>'User activated.' );
+            }
+            else
+            {
+
+                return array( 'success'=>false, 'message'=>'User not found or already active.' );
+            }
+        }
+        catch ( \Exception $e )
+        {
+            return array( 'success'=>false, 'message'=>'An error ocurred activating the account.' );
+        }
     }
 
     /**
@@ -275,16 +285,10 @@ class AuthAPI
      */
     private function _get_token ( &$user )
     {
-        $sql = 'SELECT token_chars 
-                FROM tokens 
-                WHERE user_id = ? AND token_active = 1 AND token_ip = ? 
-                ORDER BY token_id DESC 
-                LIMIT 1';
-        $stmt = $this->_oauthdb->prepare( $sql );
-        $stmt->execute( array( $user['user_id'], $_SERVER['REMOTE_ADDR'] ) );
-        $token = $stmt->fetch( \PDO::FETCH_ASSOC );
-
-        return $token ? $token['token_chars'] : '';
+        return Token::where('user_id', '=', $user['user_id'])
+                    ->where('token_active', '=', 1)
+                    ->where('token_ip', '=', $_SERVER['REMOTE_ADDR'])
+                    ->first();
     }
 
     /**
@@ -294,16 +298,8 @@ class AuthAPI
      */
     private function _connect_oauth ()
     {
-        try 
-        {
-            $db = $this->_config->get_db_oauth_info();
-            $this->_oauthdb = new \PDO( 'mysql:host='.$db['host'].';dbname='.$db['database'], $db['username'], $db['password'] );
-        } 
-        catch ( \Exception $e ) 
-        {
-            $e = new APIException( 'An error ocurred while connecting with the database.' );
-            $e->to_json();
-        }
+        // Create database connection through Eloquent ORM
+        \Capsule\Database\Connection::make('main', $this->_config->get_db_oauth_info(), true);
     }
 
     /**

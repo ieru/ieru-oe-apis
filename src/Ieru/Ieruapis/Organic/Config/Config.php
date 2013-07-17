@@ -103,7 +103,7 @@ class Config
         return array( 
             'driver'    => 'mysql',
             'host'      => 'localhost',
-            'database'  => 'ieru_organic_resources',
+            'database'  => 'ieru_organic_oauth',
             'username'  => 'root',
             'password'  => '',
             'collation' => 'utf8_general_ci',
