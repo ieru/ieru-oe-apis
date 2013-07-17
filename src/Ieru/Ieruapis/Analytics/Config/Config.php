@@ -78,10 +78,14 @@ class Config
 	public function get_db_analytics_info ()
 	{
 		return array( 
-			'host'=>'localhost',
-			'database'=>'ieru_organic_analytics',
-			'username'=>'root',
-			'password'=>''
+            'driver'    => 'mysql',
+            'host'      => 'localhost',
+            'database'  => 'ieru_organic_analytics',
+            'username'  => 'root',
+            'password'  => '',
+            'collation' => 'utf8_general_ci',
+            'prefix'    => '',
+            'charset'   => 'utf8'
 		);
 	}
 
@@ -93,10 +97,14 @@ class Config
 	public function get_db_oauth_info ()
 	{
 		return array( 
-			'host'=>'localhost',
-			'database'=>'ieru_organic_oauth',
-			'username'=>'root',
-			'password'=>''
+            'driver'    => 'mysql',
+            'host'      => 'localhost',
+            'database'  => 'ieru_organic_oauth',
+            'username'  => 'root',
+            'password'  => '',
+            'collation' => 'utf8_general_ci',
+            'prefix'    => '',
+            'charset'   => 'utf8'
 		);
 	}
 

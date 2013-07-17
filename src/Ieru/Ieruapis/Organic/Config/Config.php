@@ -27,16 +27,15 @@ class Config
             $this->_routes['POST'][] = array( '/resources',     'controller'=>'OrganicAPI#fetch_resources' );
             $this->_routes['GET'][]  = array( '/resources/:id', 'controller'=>'OrganicAPI#fetch_resource' );
 
-                  $this->_routes['GET'][]  = array( '/search',           'controller'=>'OrganicAPI#get_search' );
-                  $this->_routes['POST'][] = array( '/search',           'controller'=>'OrganicAPI#fetch_resources' );
-                  $this->_routes['GET'][]  = array( '/search/typeahead', 'controller'=>'OrganicAPI#fetch_typeahead' );
+            $this->_routes['GET'][]  = array( '/search',           'controller'=>'OrganicAPI#get_search' );
+            $this->_routes['POST'][] = array( '/search',           'controller'=>'OrganicAPI#fetch_resources' );
+            $this->_routes['GET'][]  = array( '/search/typeahead', 'controller'=>'OrganicAPI#fetch_typeahead' );
 
             $this->_routes['GET'][]  = array( '/login',                   'controller'=>'AuthAPI#login' );
             $this->_routes['GET'][]  = array( '/logout',                  'controller'=>'AuthAPI#logout' );
             $this->_routes['POST'][] = array( '/register',                'controller'=>'AuthAPI#register' );
 
-                  $this->_routes['GET'][]  = array( '/users/:user/activate', 'controller'=>'AuthAPI#activate' );
-
+            $this->_routes['GET'][]  = array( '/users/:user/activate', 'controller'=>'AuthAPI#activate' );
         }
         return $this->_routes;
     }
@@ -50,7 +49,7 @@ class Config
     {
         if ( !$this->_autolang )
         {
-                  $this->_autolang[] = 'en'; # English
+            $this->_autolang[] = 'en'; # English
             $this->_autolang[] = 'de'; # German
             $this->_autolang[] = 'fr'; # French
             $this->_autolang[] = 'es'; # Spanish
@@ -83,43 +82,51 @@ class Config
     public function get_db_info ()
     {
         return array( 
-            'host'=>'localhost',
-            'database'=>'ieru_organic_resources',
-            'username'=>'root',
-            'password'=>''
+            'driver'    => 'mysql',
+            'host'      => 'localhost',
+            'database'  => 'ieru_organic_resources',
+            'username'  => 'root',
+            'password'  => '',
+            'collation' => 'utf8_general_ci',
+            'prefix'    => '',
+            'charset'   => 'utf8'
         );
     }
 
-      /**
-       * Get the data for connecting with the OAUTH database
-       *
-       * @return array The data needed for connecting with the database
-       */
-      public function get_db_oauth_info ()
-      {
-            return array( 
-                  'host'=>'localhost',
-                  'database'=>'ieru_organic_oauth',
-                  'username'=>'root',
-                  'password'=>''
-            );
-      }
+    /**
+    * Get the data for connecting with the OAUTH database
+    *
+    * @return array The data needed for connecting with the database
+    */
+    public function get_db_oauth_info ()
+    {
+        return array( 
+            'driver'    => 'mysql',
+            'host'      => 'localhost',
+            'database'  => 'ieru_organic_resources',
+            'username'  => 'root',
+            'password'  => '',
+            'collation' => 'utf8_general_ci',
+            'prefix'    => '',
+            'charset'   => 'utf8'
+        );
+    }
 
-      /**
-       * Returns the IP of the server of the Analytics API
-       *
-       * @return string
-       */
-      public function get_analytics_server_ip ()
-      {
-            return 'http://api.dev';
-      }
+    /**
+    * Returns the IP of the server of the Analytics API
+    *
+    * @return string
+    */
+    public function get_analytics_server_ip ()
+    {
+        return 'http://api.dev';
+    }
 
-      /**
-       *
-       */
-      public function get_resources_langs ()
-      {
+    /**
+    *
+    */
+    public function get_resources_langs ()
+    {
         return include( 'LanguagesBanners.php' );
-      }
+    }
 }

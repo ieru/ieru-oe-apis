@@ -34,16 +34,7 @@ class OrganicAPI
         $this->_autolang = $config->get_autolang();
 
         // Create database connection through Eloquent ORM
-        \Capsule\Database\Connection::make('main', array(
-            'driver'    => 'mysql',
-            'host'      => 'localhost',
-            'database'  => 'ieru_organic_resources',
-            'username'  => 'root',
-            'password'  => '',
-            'collation' => 'utf8_general_ci',
-            'prefix'    => '',
-            'charset'   => 'utf8'
-        ), true);
+        \Capsule\Database\Connection::make('main', $this->_config->get_db_oauth_info(), true);
     }
     
     /**
@@ -57,6 +48,7 @@ class OrganicAPI
         $url = $this->_config->get_analytics_server_ip().'/api/analytics/search';
         $data = $this->_curl_request( $url, $this->_params );
         $resources = json_decode( $data, true );
+        $this->_params['lang'] = isset( $this->_params['lang'] ) ? $this->_params['lang'] : 'en';
 
         # Celi service not available
         if ( isset( $resources['success'] ) AND !$resources['success'] )
@@ -73,7 +65,7 @@ class OrganicAPI
             $results = array( 'success'=>false, 'errcode'=>100, 'message'=>$resources['message'] );
         }
         # Resources retrieved from Celi
-        else
+        elseif ( isset( $resources['data']['resources'] ) )
         {
             # Get the metadata information of the resource
             $records =& $this->_get_lom_data_of_resources( $resources['data']['resources'] );
@@ -97,6 +89,11 @@ class OrganicAPI
             {
                 $results = array( 'success'=> false, 'errcode'=>20, 'message'=>'No results found.' );
             }
+        }
+        // No results found
+        else
+        {
+            $results = array( 'success'=> false, 'errcode'=>20, 'message'=>'No results found.' );
         }
 
         return $results;
