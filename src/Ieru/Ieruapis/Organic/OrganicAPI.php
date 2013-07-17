@@ -34,7 +34,7 @@ class OrganicAPI
         $this->_autolang = $config->get_autolang();
 
         // Create database connection through Eloquent ORM
-        \Capsule\Database\Connection::make('main', $this->_config->get_db_oauth_info(), true);
+        \Capsule\Database\Connection::make('main', $this->_config->get_db_info(), true);
     }
     
     /**
