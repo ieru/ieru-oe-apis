@@ -573,7 +573,8 @@ class ImportAPI
                     if ( isset( $annotation->date ) )
                         $arr->annotation_date = $annotation->date->dateTime;
                     $arr->annotation_description = $annotation->description->string;
-                    $arr->annotation_description_lang = $annotation->description->string->attributes()['language'];
+                    if ( isset( $annotation->description->string ) AND  $annotation->description->string->attributes() )
+                        $arr->annotation_description_lang = $annotation->description->string->attributes()['language'];
                     $lom->annotation()->save( $arr );
                 }
             }
@@ -642,10 +643,15 @@ class ImportAPI
     {
     	$l = Lom::find( $id );
 
+        if ( !is_object( $l ) )
+            return;
+
     	/*------------------------------------------------------------------------------------------------
     	 * GENERAL
     	 *------------------------------------------------------------------------------------------------*/
         // general identifiers
+        if ( is_object( $l->general ) )
+        {}
         foreach ( $l->general->identifier as $identifier )
             $r['general']['identifier'][] = array( 'catalog'=>$identifier->identifier_catalog, 'entry'=>$identifier->identifier_entry );
     	// general title
@@ -867,13 +873,14 @@ class ImportAPI
             $k['kind']['source'] = $relation->relation_kind_source;
             $k['kind']['value'] = $relation->relation_kind;
             // Description if exists
-            if ( $relation->resource->resource_description )
+            if ( @$relation->resource->resource_description )
             {
                 $k['resource']['description']['string']['@value'] =@ $relation->resource->resource_description;
                 $k['resource']['description']['string']['@attributes']['language'] =@ $relation->resource->resource_description_lang;
             }
             // Identifiers
-            foreach ( $relation->resource->identifier as $identifier )
+            if ( is_object( $relation->resource ) )
+            foreach ( @$relation->resource->identifier as $identifier )
                 $k['resource']['identifier'][] = array( 'catalog'=>$identifier->identifier_catalog, 'entry'=>$identifier->identifier_entry );
 
             $r['relation'][] = $k;
