@@ -122,11 +122,13 @@ class ImportAPI
         //gc_enable();
         //ini_set('memory_limit', '3000M');
 
+        $fp = fopen( 'duplicated_ids.txt', 'wb' );
+
     	// Load XML file
     	//$file = $_SERVER['DOCUMENT_ROOT'].'/xml/resource.xml';
         $parsed = 0;
         //foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml_full/*/*.xml' ) as $file ) 
-        foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml/*.xml' ) as $file ) 
+        foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml/*/*' ) as $file ) 
         {
             $name = preg_replace( '@/users/david/sites/github/ieru-api-server/xml/@si', '', $file );
 
@@ -139,488 +141,504 @@ class ImportAPI
             echo $name;
             $xml = simplexml_load_file( $file );
 
+            // Get id of the resource and collection
+            $split = explode( '/', $name );
+            $id = explode( '.', $split[1] );
 
         	// Create new LOM object
-        	$lom = new Lom();
-            $lom->lom_original_file_name = $name;
-        	$lom->save();
+            $check = Lom::find($id);
 
-        	/*------------------------------------------------------------------------------------------------
-        	 * GENERAL
-        	 *------------------------------------------------------------------------------------------------*/
-        	// Parse General metadata
-        	$general = new General();
-        	$general->general_structure = (string)$xml->general->structure->value;
-        	$general->general_structure_source = (string)$xml->general->structure->source;
-        	$general->general_aggregation_level = (string)$xml->general->aggregationLevel->value;
-        	$general->general_aggregation_level_source = (string)$xml->general->aggregationLevel->source;
-        	$lom->general()->save( $general );
+            if ( $check->count() )
+            {
+                fwrite( $fp, $check[0]->lom_original_file_name.' | '.$name."\n" );
+            }
+            else
+            {
 
-        	// Parse General Titles
-        	if ( isset( $xml->general->title ) )
-        	foreach ( $xml->general->title->string as $desc )
-        	{
-    	    	$gen_d = new GeneralsTitle();
-    	    	$gen_d->generals_title_string = $desc;
-    	    	$gen_d->generals_title_lang = $desc->attributes()['language'];
-    	    	$general->generalstitle()->save( $gen_d );
-        	}
+            	$lom = new Lom();
+                $lom->lom_id = $id[0];
+                $lom->lom_original_file_name = $name;
+                $lom->lom_collection = $split[0];
+            	$lom->save();
 
-        	// Parse General languages
-        	if ( isset( $xml->general->language ) )
-        	foreach ( $xml->general->language as $desc )
-        	{
-    	    	$gen_d = new GeneralsLanguage();
-    	    	$gen_d->generals_language_lang = $desc;
-    	    	$general->generalslanguage()->save( $gen_d );
-        	}
+            	/*------------------------------------------------------------------------------------------------
+            	 * GENERAL
+            	 *------------------------------------------------------------------------------------------------*/
+            	// Parse General metadata
+            	$general = new General();
+            	$general->general_structure = (string)$xml->general->structure->value;
+            	$general->general_structure_source = (string)$xml->general->structure->source;
+            	$general->general_aggregation_level = (string)$xml->general->aggregationLevel->value;
+            	$general->general_aggregation_level_source = (string)$xml->general->aggregationLevel->source;
+            	$lom->general()->save( $general );
 
-        	// Parse General Descriptions
-        	if ( isset( $xml->general->description ) )
-        	foreach ( $xml->general->description as $descri )
-        	{
-                foreach ( $descri->string as $desc )
+            	// Parse General Titles
+            	if ( isset( $xml->general->title ) )
+            	foreach ( $xml->general->title->string as $desc )
+            	{
+        	    	$gen_d = new GeneralsTitle();
+        	    	$gen_d->generals_title_string = $desc;
+        	    	$gen_d->generals_title_lang = $desc->attributes()['language'];
+        	    	$general->generalstitle()->save( $gen_d );
+            	}
+
+            	// Parse General languages
+            	if ( isset( $xml->general->language ) )
+            	foreach ( $xml->general->language as $desc )
+            	{
+        	    	$gen_d = new GeneralsLanguage();
+        	    	$gen_d->generals_language_lang = $desc;
+        	    	$general->generalslanguage()->save( $gen_d );
+            	}
+
+            	// Parse General Descriptions
+            	if ( isset( $xml->general->description ) )
+            	foreach ( $xml->general->description as $descri )
+            	{
+                    foreach ( $descri->string as $desc )
+                    {
+            	    	$gen_d = new GeneralsDescription();
+            	    	$gen_d->generals_description_string = $desc;
+            	    	$gen_d->generals_description_lang = $desc->attributes()['language'];
+            	    	$general->generalsdescription()->save( $gen_d );
+                    } 
+            	}
+
+            	// Parse General Keywords
+            	if ( isset( $xml->general->keyword ) )
+            	foreach ( @$xml->general->keyword as $keyword )
+            	{
+        			// Create root keyword
+        	    	$genk = new GeneralsKeyword();
+        	    	$general->generalskeyword()->save($genk);
+            		foreach ( $keyword as $lang )
+            		{
+            			$gen_d = new GeneralsKeywordsText();
+        		    	$gen_d->generals_keywords_text_string = $lang;
+        		    	$gen_d->generals_keywords_text_lang = $lang->attributes()['language'];
+        		    	$genk->generalskeywordtext()->save( $gen_d );
+            		}
+            	}
+
+            	// Parse General Coverages
+            	if ( isset( $xml->general->coverage ) )
+            	foreach ( $xml->general->coverage as $coverage )
+            	{
+        			// Create root coverage
+        	    	$genk = new GeneralsCoverage();
+        	    	$general->generalscoverage()->save($genk);
+
+            		foreach ( $coverage as $lang )
+            		{
+            			$gen_d = new GeneralsCoveragesText();
+        		    	$gen_d->generals_coverages_text_string = $lang;
+        		    	$gen_d->generals_coverages_text_lang = $lang->attributes()['language'];
+        		    	$genk->generalscoveragestext()->save( $gen_d );
+            		}
+            	}
+
+            	// Parse General identifiers
+            	if ( isset( $xml->general->identifier ) )
+            	foreach ( $xml->general->identifier as $id )
+            	{
+        			$identifier = new Identifier();
+        			$identifier->lom_id = $general->lom_id;
+        	    	$identifier->identifier_catalog =@ $id->catalog;
+        	    	$identifier->identifier_catalog_lang =@ $id->catalog->attributes()['language'];
+        	    	$identifier->identifier_entry =@ $id->entry;
+        	    	$identifier->identifier_entry_lang =@ $id->entry->attributes()['language'];
+        	    	$general->identifier()->save( $identifier );
+            	}
+
+            	/*------------------------------------------------------------------------------------------------
+            	 * LIFECYCLE
+            	 *------------------------------------------------------------------------------------------------*/
+            	// Parse lifecycle metadata
+            	if ( isset( $xml->lifeCycle ) )
+            	{
+        	    	$life = new Lifecycle();
+        	    	if ( isset( $xml->lifeCycle->status ) )
+        	    	{
+        		    	$life->lifecycle_status =@ $xml->lifeCycle->status->value;
+        		    	$life->lifecycle_status_source =@ $xml->lifeCycle->status->source;
+        	    	}
+        	    	if ( isset( $xml->lifeCycle->version ) )
+        	    	{
+        		    	$life->lifecycle_version =@ $xml->lifeCycle->version->string;
+        		    	$life->lifecycle_version_lang =@ $xml->lifeCycle->version->string->attributes()['language'];
+        	    	}
+        	    	$lom->lifecycle()->save( $life );
+            	}
+            	// Parse lifecycle contribute
+            	if ( isset( $xml->lifeCycle->contribute ) )
+            	foreach ( $xml->lifeCycle->contribute as $id )
+            	{
+            		// basic contribute info
+        			$contribute = new Contribute();
+        			$contribute->lom_id = $general->lom_id;
+        	    	$contribute->contribute_role =@ $id->role->value;
+        	    	$contribute->contribute_role_source =@ $id->role->source;
+                    if ( isset( $id->date->dateTime ) )
+                    {
+            	    	$contribute->contribute_date =@ $id->date->dateTime;
+            			$contribute->contribute_date_description =@ $id->date->string;
+            	    	$contribute->contribute_date_description_lang =@ $id->date->string->attributes()['language'];
+                    }
+        	    	$life->contribute()->save( $contribute );
+
+        	    	// Contribute entities
+        	    	foreach ( $id->entity as $e )
+        	    	{
+        		    	// contribute entities info
+        		    	$entity = new ContributesEntity();
+        		    	$entity->contributes_entity_string = $e;
+        		    	$contribute->contributesentity()->save( $entity );
+        	    	}
+            	}
+
+                /*------------------------------------------------------------------------------------------------
+                 * METAMETADATA
+                 *------------------------------------------------------------------------------------------------*/
+                // Parse metametadatas
+                $metadata = new Metametadata();
+                if ( isset( $xml->metaMetadata->language ) )
+                    $metadata->metametadata_lang = $xml->metaMetadata->language;
+                $lom->metametadata()->save( $metadata );
+
+                // Parse metametadatas identifiers
+                if ( isset( $xml->metaMetadata->identifier ) )
+                foreach ( $xml->metaMetadata->identifier as $id )
                 {
-        	    	$gen_d = new GeneralsDescription();
-        	    	$gen_d->generals_description_string = $desc;
-        	    	$gen_d->generals_description_lang = $desc->attributes()['language'];
-        	    	$general->generalsdescription()->save( $gen_d );
-                } 
-        	}
-
-        	// Parse General Keywords
-        	if ( isset( $xml->general->keyword ) )
-        	foreach ( @$xml->general->keyword as $keyword )
-        	{
-    			// Create root keyword
-    	    	$genk = new GeneralsKeyword();
-    	    	$general->generalskeyword()->save($genk);
-        		foreach ( $keyword as $lang )
-        		{
-        			$gen_d = new GeneralsKeywordsText();
-    		    	$gen_d->generals_keywords_text_string = $lang;
-    		    	$gen_d->generals_keywords_text_lang = $lang->attributes()['language'];
-    		    	$genk->generalskeywordtext()->save( $gen_d );
-        		}
-        	}
-
-        	// Parse General Coverages
-        	if ( isset( $xml->general->coverage ) )
-        	foreach ( $xml->general->coverage as $coverage )
-        	{
-    			// Create root coverage
-    	    	$genk = new GeneralsCoverage();
-    	    	$general->generalscoverage()->save($genk);
-
-        		foreach ( $coverage as $lang )
-        		{
-        			$gen_d = new GeneralsCoveragesText();
-    		    	$gen_d->generals_coverages_text_string = $lang;
-    		    	$gen_d->generals_coverages_text_lang = $lang->attributes()['language'];
-    		    	$genk->generalscoveragestext()->save( $gen_d );
-        		}
-        	}
-
-        	// Parse General identifiers
-        	if ( isset( $xml->general->identifier ) )
-        	foreach ( $xml->general->identifier as $id )
-        	{
-    			$identifier = new Identifier();
-    			$identifier->lom_id = $general->lom_id;
-    	    	$identifier->identifier_catalog =@ $id->catalog;
-    	    	$identifier->identifier_catalog_lang =@ $id->catalog->attributes()['language'];
-    	    	$identifier->identifier_entry =@ $id->entry;
-    	    	$identifier->identifier_entry_lang =@ $id->entry->attributes()['language'];
-    	    	$general->identifier()->save( $identifier );
-        	}
-
-        	/*------------------------------------------------------------------------------------------------
-        	 * LIFECYCLE
-        	 *------------------------------------------------------------------------------------------------*/
-        	// Parse lifecycle metadata
-        	if ( isset( $xml->lifeCycle ) )
-        	{
-    	    	$life = new Lifecycle();
-    	    	if ( isset( $xml->lifeCycle->status ) )
-    	    	{
-    		    	$life->lifecycle_status =@ $xml->lifeCycle->status->value;
-    		    	$life->lifecycle_status_source =@ $xml->lifeCycle->status->source;
-    	    	}
-    	    	if ( isset( $xml->lifeCycle->version ) )
-    	    	{
-    		    	$life->lifecycle_version =@ $xml->lifeCycle->version->string;
-    		    	$life->lifecycle_version_lang =@ $xml->lifeCycle->version->string->attributes()['language'];
-    	    	}
-    	    	$lom->lifecycle()->save( $life );
-        	}
-        	// Parse lifecycle contribute
-        	if ( isset( $xml->lifeCycle->contribute ) )
-        	foreach ( $xml->lifeCycle->contribute as $id )
-        	{
-        		// basic contribute info
-    			$contribute = new Contribute();
-    			$contribute->lom_id = $general->lom_id;
-    	    	$contribute->contribute_role =@ $id->role->value;
-    	    	$contribute->contribute_role_source =@ $id->role->source;
-                if ( isset( $id->date->dateTime ) )
-                {
-        	    	$contribute->contribute_date =@ $id->date->dateTime;
-        			$contribute->contribute_date_description =@ $id->date->string;
-        	    	$contribute->contribute_date_description_lang =@ $id->date->string->attributes()['language'];
+                    $identifier = new Identifier();
+                    $identifier->lom_id = $metadata->lom_id;
+                    $identifier->identifier_catalog =@ $id->catalog;
+                    $identifier->identifier_catalog_lang =@ $id->catalog->attributes()['language'];
+                    $identifier->identifier_entry =@ $id->entry;
+                    $identifier->identifier_entry_lang =@ $id->entry->attributes()['language'];
+                    $metadata->identifier()->save( $identifier );
                 }
-    	    	$life->contribute()->save( $contribute );
 
-    	    	// Contribute entities
-    	    	foreach ( $id->entity as $e )
-    	    	{
-    		    	// contribute entities info
-    		    	$entity = new ContributesEntity();
-    		    	$entity->contributes_entity_string = $e;
-    		    	$contribute->contributesentity()->save( $entity );
-    	    	}
-        	}
-
-            /*------------------------------------------------------------------------------------------------
-             * METAMETADATA
-             *------------------------------------------------------------------------------------------------*/
-            // Parse metametadatas
-            $metadata = new Metametadata();
-            if ( isset( $xml->metaMetadata->language ) )
-                $metadata->metametadata_lang = $xml->metaMetadata->language;
-            $lom->metametadata()->save( $metadata );
-
-            // Parse metametadatas identifiers
-            if ( isset( $xml->metaMetadata->identifier ) )
-            foreach ( $xml->metaMetadata->identifier as $id )
-            {
-                $identifier = new Identifier();
-                $identifier->lom_id = $metadata->lom_id;
-                $identifier->identifier_catalog =@ $id->catalog;
-                $identifier->identifier_catalog_lang =@ $id->catalog->attributes()['language'];
-                $identifier->identifier_entry =@ $id->entry;
-                $identifier->identifier_entry_lang =@ $id->entry->attributes()['language'];
-                $metadata->identifier()->save( $identifier );
-            }
-
-            // Parse metametadatas schemas
-            if ( isset( $xml->metaMetadata->metadataSchema ) )
-            foreach ( $xml->metaMetadata->metadataSchema as $schema )
-            {
-                $s = new MetametadatasSchema();
-                $s->metametadatas_schema_text =@ $schema;
-                $metadata->metametadatasschema()->save( $s );
-            }
-
-            // Parse metametadatas contribute
-            if ( isset( $xml->metaMetadata->contribute ) )
-            foreach ( $xml->metaMetadata->contribute as $id )
-            {
-                // basic contribute info
-                $contribute = new Contribute();
-                $contribute->lom_id = $metadata->lom_id;
-                $contribute->contribute_role =@ $id->role->value;
-                $contribute->contribute_role_source =@ $id->role->source;
-                if ( isset( $id->date->dateTime ) )
+                // Parse metametadatas schemas
+                if ( isset( $xml->metaMetadata->metadataSchema ) )
+                foreach ( $xml->metaMetadata->metadataSchema as $schema )
                 {
-                    $contribute->contribute_date =@ $id->date->dateTime;
-                    $contribute->contribute_date_description =@ $id->date->string;
-                    $contribute->contribute_date_description_lang =@ $id->date->string->attributes()['language'];
+                    $s = new MetametadatasSchema();
+                    $s->metametadatas_schema_text =@ $schema;
+                    $metadata->metametadatasschema()->save( $s );
                 }
-                $metadata->contribute()->save( $contribute );
 
-                // Contribute entities
-                foreach ( $id->entity as $e )
+                // Parse metametadatas contribute
+                if ( isset( $xml->metaMetadata->contribute ) )
+                foreach ( $xml->metaMetadata->contribute as $id )
                 {
-                    // contribute entities info
-                    $entity = new ContributesEntity();
-                    $entity->contributes_entity_string = $e;
-                    $contribute->contributesentity()->save( $entity );
-                }
-            }
-
-            /*------------------------------------------------------------------------------------------------
-             * TECHNICAL
-             *------------------------------------------------------------------------------------------------*/
-            // Parse technical
-            $technical = new Technical();
-            if ( isset( $xml->technical->size ) )
-                $technical->technical_size = $xml->technical->size;
-            if ( isset( $xml->technical->duration ) )
-                $technical->technical_duration = $xml->technical->duration->duration;
-            $lom->technical()->save( $technical );
-
-            // Parse technical formats
-            if ( isset( $xml->technical->format ) )
-            foreach ( $xml->technical->format as $format )
-            {
-                $entry = new TechnicalsFormat();
-                $entry->technicals_format_text = $format;
-                $technical->technicalsformat()->save( $entry );
-            }
-
-            // Parse technical locations
-            if ( isset( $xml->technical->location ) )
-            foreach ( $xml->technical->location as $location )
-            {
-                $entry = new TechnicalsLocation();
-                $entry->technicals_location_text = $location;
-                $technical->technicalslocation()->save( $entry );
-            }
-
-            // Parse technical installation remarks
-            if ( isset( $xml->technical->installationRemarks ) AND $xml->technical->installationRemarks->string != '' )
-            foreach ( $xml->technical->installationRemarks as $installation )
-            {
-                $entry = new TechnicalsInstallationremark();
-                $entry->technicals_installationremark_string =@ $installation->string;
-                $entry->technicals_installationremark_lang =@ $installation->string->attributes()['language'];
-                $technical->technicalsinstallationremark()->save( $entry );
-            }
-
-            // Parse technical other platform requirements
-            if ( isset( $xml->technical->otherPlatformRequirements ) AND $xml->technical->otherPlatformRequirements->string != '' )
-            foreach ( $xml->technical->otherPlatformRequirements as $requirement )
-            {
-                $entry = new TechnicalsOtherplatformrequirement();
-                $entry->technicals_otherplatformrequirement_string =@ $requirement->string;
-                $entry->technicals_otherplatformrequirement_lang =@ $requirement->string->attributes()['language'];
-                $technical->technicalsotherplatformrequirement()->save( $entry );
-            }
-
-            // parse technical requirements
-            if ( isset( $xml->technical->requirement ) )
-            foreach ( $xml->technical->requirement as $requirement )
-            {
-                $entry = new Requirement();
-                $technical->requirement()->save( $entry );
-
-                foreach ( $requirement->orComposite as $or )
-                {
-                    $ent = new Orcomposite();
-                    $ent->orcomposite_type = $or->type->value;
-                    $ent->orcomposite_type_source = $or->type->source;
-                    $ent->orcomposite_name = $or->name->value;
-                    $ent->orcomposite_name_source = $or->name->source;
-                    $ent->orcomposite_minimumversion = $or->minimumVersion;
-                    $ent->orcomposite_maximumversion = $or->maximumVersion;
-                    $entry->orcomposite()->save( $ent );
-                }
-            }
-
-            /*------------------------------------------------------------------------------------------------
-             * EDUCATIONAL
-             *------------------------------------------------------------------------------------------------*/
-            if ( isset( $xml->educational ) )
-            {
-                foreach ( $xml->educational as $educational )
-                {
-                    $resource = new Educational();
-                    // Interactivity Level
-                    $resource->educational_interactivitylevel = $educational->interactivityLevel->value;
-                    $resource->educational_interactivitylevel_source = $educational->interactivityLevel->source;
-                    // Interactivity Type
-                    $resource->educational_interactivitytype = $educational->interactivityType->value;
-                    $resource->educational_interactivitytype_source = $educational->interactivityType->source;
-                    // Difficulty
-                    if ( isset( $educational->difficulty ) )
+                    // basic contribute info
+                    $contribute = new Contribute();
+                    $contribute->lom_id = $metadata->lom_id;
+                    $contribute->contribute_role =@ $id->role->value;
+                    $contribute->contribute_role_source =@ $id->role->source;
+                    if ( isset( $id->date->dateTime ) )
                     {
-                        $resource->educational_difficulty = $educational->difficulty->value;
-                        $resource->educational_difficulty_source = $educational->difficulty->source;
+                        $contribute->contribute_date =@ $id->date->dateTime;
+                        $contribute->contribute_date_description =@ $id->date->string;
+                        $contribute->contribute_date_description_lang =@ $id->date->string->attributes()['language'];
                     }
-                    // semanticDensity
-                    if ( isset( $educational->semanticDensity ) )
-                    {
-                        $resource->educational_semanticdensity = $educational->semanticDensity->value;
-                        $resource->educational_semanticdensity_source = $educational->semanticDensity->source;
-                    }
-                    // Learning time
-                    if ( isset( $educational->typicalLearningTime ) )
-                    {
-                        $resource->educational_typicallearningtime = $educational->typicalLearningTime->duration;
-                    }
-                    $lom->educational()->save( $resource );
+                    $metadata->contribute()->save( $contribute );
 
-                    // Language
-                    foreach ( $educational->language as $learningtype )
+                    // Contribute entities
+                    foreach ( $id->entity as $e )
                     {
-                        $type = new EducationalsLanguage();
-                        $type->educationals_language_string = $learningtype;
-                        $resource->educationalstype()->save( $type );
-                    }
-
-                    // Learning resource type
-                    foreach ( $educational->learningResourceType as $learningtype )
-                    {
-                        $type = new EducationalsType();
-                        $type->educationals_type_string = $learningtype->value;
-                        $type->educationals_type_source = $learningtype->source;
-                        $resource->educationalstype()->save( $type );
-                    }
-
-                    // Intended end user role
-                    foreach ( $educational->intendedEndUserRole as $learningtype )
-                    {
-                        $type = new EducationalsUserrole();
-                        $type->educationals_userrole_string = $learningtype->value;
-                        $type->educationals_userrole_source = $learningtype->source;
-                        $resource->educationalstype()->save( $type );
-                    }
-
-                    // Context
-                    foreach ( $educational->context as $learningtype )
-                    {
-                        $type = new EducationalsContext();
-                        $type->educationals_context_string = $learningtype->value;
-                        $type->educationals_context_source = $learningtype->source;
-                        $resource->educationalstype()->save( $type );
-                    }
-
-                    // Typical age range
-                    foreach ( $educational->typicalAgeRange as $learningtype )
-                    {
-                        $type = new EducationalsTypicalagerange();
-                        $type->educationals_typicalagerange_string = $learningtype->string;
-                        $type->educationals_typicalagerange_lang = $learningtype->string->attributes()['language'];
-                        $resource->educationalstype()->save( $type );
-                    }
-                    // Typical age range
-                    foreach ( $educational->description as $learningtype )
-                    {
-                        $type = new EducationalsDescription();
-                        $type->educationals_description_string = $learningtype->string;
-                        $type->educationals_description_lang = $learningtype->string->attributes()['language'];
-                        $resource->educationalstype()->save( $type );
+                        // contribute entities info
+                        $entity = new ContributesEntity();
+                        $entity->contributes_entity_string = $e;
+                        $contribute->contributesentity()->save( $entity );
                     }
                 }
-            }
 
-            /*------------------------------------------------------------------------------------------------
-             * RIGHTS
-             *------------------------------------------------------------------------------------------------*/
-            if ( isset( $xml->rights ) )
-            {
-                $rights = new Right();
-                if ( $xml->rights->copyrightAndOtherRestrictions->value )
-                {
-                    $rights->right_copyright = $xml->rights->copyrightAndOtherRestrictions->value;
-                    $rights->right_copyright_source = $xml->rights->copyrightAndOtherRestrictions->source;
-                }
-                if ( isset( $xml->rights->cost ) )
-                {
-                    $rights->right_cost = $xml->rights->cost->value;
-                    $rights->right_cost_source = $xml->rights->cost->source;
-                }
-                if ( isset( $xml->rights->description ) )
-                {
-                    $rights->right_description = $xml->rights->description->string;
-                    $rights->right_description_lang = $xml->rights->description->string->attributes()['language'];
-                }
-                $lom->right()->save( $rights );
-            }
+                /*------------------------------------------------------------------------------------------------
+                 * TECHNICAL
+                 *------------------------------------------------------------------------------------------------*/
+                // Parse technical
+                $technical = new Technical();
+                if ( isset( $xml->technical->size ) )
+                    $technical->technical_size = $xml->technical->size;
+                if ( isset( $xml->technical->duration ) )
+                    $technical->technical_duration = $xml->technical->duration->duration;
+                $lom->technical()->save( $technical );
 
-            /*------------------------------------------------------------------------------------------------
-             * RELATION
-             *------------------------------------------------------------------------------------------------*/
-            if ( isset( $xml->relation ) )
-            {
-                foreach ( $xml->relation as $r )
+                // Parse technical formats
+                if ( isset( $xml->technical->format ) )
+                foreach ( $xml->technical->format as $format )
                 {
-                    $relation = new Relation();
-                    // Set KIND
-                    if ( isset( $r->kind ) )
+                    $entry = new TechnicalsFormat();
+                    $entry->technicals_format_text = $format;
+                    $technical->technicalsformat()->save( $entry );
+                }
+
+                // Parse technical locations
+                if ( isset( $xml->technical->location ) )
+                foreach ( $xml->technical->location as $location )
+                {
+                    $entry = new TechnicalsLocation();
+                    $entry->technicals_location_text = $location;
+                    $technical->technicalslocation()->save( $entry );
+                }
+
+                // Parse technical installation remarks
+                if ( isset( $xml->technical->installationRemarks ) AND $xml->technical->installationRemarks->string != '' )
+                foreach ( $xml->technical->installationRemarks as $installation )
+                {
+                    $entry = new TechnicalsInstallationremark();
+                    $entry->technicals_installationremark_string =@ $installation->string;
+                    $entry->technicals_installationremark_lang =@ $installation->string->attributes()['language'];
+                    $technical->technicalsinstallationremark()->save( $entry );
+                }
+
+                // Parse technical other platform requirements
+                if ( isset( $xml->technical->otherPlatformRequirements ) AND $xml->technical->otherPlatformRequirements->string != '' )
+                foreach ( $xml->technical->otherPlatformRequirements as $requirement )
+                {
+                    $entry = new TechnicalsOtherplatformrequirement();
+                    $entry->technicals_otherplatformrequirement_string =@ $requirement->string;
+                    $entry->technicals_otherplatformrequirement_lang =@ $requirement->string->attributes()['language'];
+                    $technical->technicalsotherplatformrequirement()->save( $entry );
+                }
+
+                // parse technical requirements
+                if ( isset( $xml->technical->requirement ) )
+                foreach ( $xml->technical->requirement as $requirement )
+                {
+                    $entry = new Requirement();
+                    $technical->requirement()->save( $entry );
+
+                    foreach ( $requirement->orComposite as $or )
                     {
-                        $relation->relation_kind =@ $r->kind->value;
-                        $relation->relation_kind_source =@ $r->kind->source;
+                        $ent = new Orcomposite();
+                        $ent->orcomposite_type = $or->type->value;
+                        $ent->orcomposite_type_source = $or->type->source;
+                        $ent->orcomposite_name = $or->name->value;
+                        $ent->orcomposite_name_source = $or->name->source;
+                        $ent->orcomposite_minimumversion = $or->minimumVersion;
+                        $ent->orcomposite_maximumversion = $or->maximumVersion;
+                        $entry->orcomposite()->save( $ent );
                     }
-                    $lom->relation()->save( $relation );
-                    // Set RESOURCES
-                    if ( isset( $r->resource ) )
+                }
+
+                /*------------------------------------------------------------------------------------------------
+                 * EDUCATIONAL
+                 *------------------------------------------------------------------------------------------------*/
+                if ( isset( $xml->educational ) )
+                {
+                    foreach ( $xml->educational as $educational )
                     {
-                        foreach ( $r->resource as $r )
+                        $resource = new Educational();
+                        // Interactivity Level
+                        $resource->educational_interactivitylevel = $educational->interactivityLevel->value;
+                        $resource->educational_interactivitylevel_source = $educational->interactivityLevel->source;
+                        // Interactivity Type
+                        $resource->educational_interactivitytype = $educational->interactivityType->value;
+                        $resource->educational_interactivitytype_source = $educational->interactivityType->source;
+                        // Difficulty
+                        if ( isset( $educational->difficulty ) )
                         {
-                            $resource = new Resource();
-                            // Set resource
-                            if ( $r->description->string )
+                            $resource->educational_difficulty = $educational->difficulty->value;
+                            $resource->educational_difficulty_source = $educational->difficulty->source;
+                        }
+                        // semanticDensity
+                        if ( isset( $educational->semanticDensity ) )
+                        {
+                            $resource->educational_semanticdensity = $educational->semanticDensity->value;
+                            $resource->educational_semanticdensity_source = $educational->semanticDensity->source;
+                        }
+                        // Learning time
+                        if ( isset( $educational->typicalLearningTime ) )
+                        {
+                            $resource->educational_typicallearningtime = $educational->typicalLearningTime->duration;
+                        }
+                        $lom->educational()->save( $resource );
+
+                        // Language
+                        foreach ( $educational->language as $learningtype )
+                        {
+                            $type = new EducationalsLanguage();
+                            $type->educationals_language_string = $learningtype;
+                            $resource->educationalstype()->save( $type );
+                        }
+
+                        // Learning resource type
+                        foreach ( $educational->learningResourceType as $learningtype )
+                        {
+                            $type = new EducationalsType();
+                            $type->educationals_type_string = $learningtype->value;
+                            $type->educationals_type_source = $learningtype->source;
+                            $resource->educationalstype()->save( $type );
+                        }
+
+                        // Intended end user role
+                        foreach ( $educational->intendedEndUserRole as $learningtype )
+                        {
+                            $type = new EducationalsUserrole();
+                            $type->educationals_userrole_string = $learningtype->value;
+                            $type->educationals_userrole_source = $learningtype->source;
+                            $resource->educationalstype()->save( $type );
+                        }
+
+                        // Context
+                        foreach ( $educational->context as $learningtype )
+                        {
+                            $type = new EducationalsContext();
+                            $type->educationals_context_string = $learningtype->value;
+                            $type->educationals_context_source = $learningtype->source;
+                            $resource->educationalstype()->save( $type );
+                        }
+
+                        // Typical age range
+                        foreach ( $educational->typicalAgeRange as $learningtype )
+                        {
+                            $type = new EducationalsTypicalagerange();
+                            $type->educationals_typicalagerange_string = $learningtype->string;
+                            $type->educationals_typicalagerange_lang = $learningtype->string->attributes()['language'];
+                            $resource->educationalstype()->save( $type );
+                        }
+                        // Typical age range
+                        foreach ( $educational->description as $learningtype )
+                        {
+                            $type = new EducationalsDescription();
+                            $type->educationals_description_string = $learningtype->string;
+                            $type->educationals_description_lang = $learningtype->string->attributes()['language'];
+                            $resource->educationalstype()->save( $type );
+                        }
+                    }
+                }
+
+                /*------------------------------------------------------------------------------------------------
+                 * RIGHTS
+                 *------------------------------------------------------------------------------------------------*/
+                if ( isset( $xml->rights ) )
+                {
+                    $rights = new Right();
+                    if ( $xml->rights->copyrightAndOtherRestrictions->value )
+                    {
+                        $rights->right_copyright = $xml->rights->copyrightAndOtherRestrictions->value;
+                        $rights->right_copyright_source = $xml->rights->copyrightAndOtherRestrictions->source;
+                    }
+                    if ( isset( $xml->rights->cost ) )
+                    {
+                        $rights->right_cost = $xml->rights->cost->value;
+                        $rights->right_cost_source = $xml->rights->cost->source;
+                    }
+                    if ( isset( $xml->rights->description ) )
+                    {
+                        $rights->right_description = $xml->rights->description->string;
+                        $rights->right_description_lang = $xml->rights->description->string->attributes()['language'];
+                    }
+                    $lom->right()->save( $rights );
+                }
+
+                /*------------------------------------------------------------------------------------------------
+                 * RELATION
+                 *------------------------------------------------------------------------------------------------*/
+                if ( isset( $xml->relation ) )
+                {
+                    foreach ( $xml->relation as $r )
+                    {
+                        $relation = new Relation();
+                        // Set KIND
+                        if ( isset( $r->kind ) )
+                        {
+                            $relation->relation_kind =@ $r->kind->value;
+                            $relation->relation_kind_source =@ $r->kind->source;
+                        }
+                        $lom->relation()->save( $relation );
+                        // Set RESOURCES
+                        if ( isset( $r->resource ) )
+                        {
+                            foreach ( $r->resource as $r )
                             {
-                                $resource->resource_description = $r->description->string;
-                                $resource->resource_description_lang = $r->description->string->attributes()['language'];
-                            }
-                            $relation->resource()->save( $resource );
-                            // Set identifiers
-                            foreach ( $r->identifier as $i )
-                            {
-                                $identifier = new Identifier();
-                                $identifier->lom_id = $lom->lom_id;
-                                $identifier->identifier_catalog =@ $i->catalog;
-                                $identifier->identifier_entry =@ $i->entry;
-                                $resource->identifier()->save( $identifier );
+                                $resource = new Resource();
+                                // Set resource
+                                if ( $r->description->string )
+                                {
+                                    $resource->resource_description = $r->description->string;
+                                    $resource->resource_description_lang = $r->description->string->attributes()['language'];
+                                }
+                                $relation->resource()->save( $resource );
+                                // Set identifiers
+                                foreach ( $r->identifier as $i )
+                                {
+                                    $identifier = new Identifier();
+                                    $identifier->lom_id = $lom->lom_id;
+                                    $identifier->identifier_catalog =@ $i->catalog;
+                                    $identifier->identifier_entry =@ $i->entry;
+                                    $resource->identifier()->save( $identifier );
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            /*------------------------------------------------------------------------------------------------
-             * ANNOTATION
-             *------------------------------------------------------------------------------------------------*/
-            if ( isset( $xml->annotation ) )
-            {
-                foreach ( $xml->annotation as $annotation )
+                /*------------------------------------------------------------------------------------------------
+                 * ANNOTATION
+                 *------------------------------------------------------------------------------------------------*/
+                if ( isset( $xml->annotation ) )
                 {
-                    $arr = new Annotation();
-                    if ( isset( $annotation->entity ) )
-                        $arr->annotation_entity = $annotation->entity;
-                    if ( isset( $annotation->date ) )
-                        $arr->annotation_date = $annotation->date->dateTime;
-                    $arr->annotation_description = $annotation->description->string;
-                    if ( isset( $annotation->description->string ) AND  $annotation->description->string->attributes() )
-                        $arr->annotation_description_lang = $annotation->description->string->attributes()['language'];
-                    $lom->annotation()->save( $arr );
-                }
-            }
-
-            /*------------------------------------------------------------------------------------------------
-             * CLASSIFICATION
-             *------------------------------------------------------------------------------------------------*/
-            if ( isset( $xml->classification ) )
-            {
-                foreach ( $xml->classification as $class )
-                {
-                    $arr = new Classification();
-                    // Purpose
-                    if ( isset( $class->purpose->value ) )
-                        $arr->classification_purpose = $class->purpose->value;
-                    if ( isset( $class->purpose->value ) )
-                        $arr->classification_purpose_source = $class->purpose->source;
-
-                    $lom->classification()->save( $arr );
-
-                    // Taxonpath
-                    foreach ( $class->taxonPath as $tp )
+                    foreach ( $xml->annotation as $annotation )
                     {
-                        $tax = new Taxonpath();
-                        $tax->taxonpath_source =@ $tp->source->string;
-                        $tax->taxonpath_source_lang =@ $tp->source->string->attributes()['language'];
-                        $arr->taxonpath()->save( $tax );
+                        $arr = new Annotation();
+                        if ( isset( $annotation->entity ) )
+                            $arr->annotation_entity = $annotation->entity;
+                        if ( isset( $annotation->date ) )
+                            $arr->annotation_date = $annotation->date->dateTime;
+                        $arr->annotation_description = $annotation->description->string;
+                        if ( isset( $annotation->description->string ) AND  $annotation->description->string->attributes() )
+                            $arr->annotation_description_lang = $annotation->description->string->attributes()['language'];
+                        $lom->annotation()->save( $arr );
+                    }
+                }
 
-                        // Taxon
-                        foreach ( $tp->taxon as $t )
+                /*------------------------------------------------------------------------------------------------
+                 * CLASSIFICATION
+                 *------------------------------------------------------------------------------------------------*/
+                if ( isset( $xml->classification ) )
+                {
+                    foreach ( $xml->classification as $class )
+                    {
+                        $arr = new Classification();
+                        // Purpose
+                        if ( isset( $class->purpose->value ) )
+                            $arr->classification_purpose = $class->purpose->value;
+                        if ( isset( $class->purpose->value ) )
+                            $arr->classification_purpose_source = $class->purpose->source;
+
+                        $lom->classification()->save( $arr );
+
+                        // Taxonpath
+                        foreach ( $class->taxonPath as $tp )
                         {
-                            $ta = new Taxon();
-                            $ta->taxon_id_string = $t->id;
-                            if ( $t->entry->string )
+                            $tax = new Taxonpath();
+                            $tax->taxonpath_source =@ $tp->source->string;
+                            $tax->taxonpath_source_lang =@ $tp->source->string->attributes()['language'];
+                            $arr->taxonpath()->save( $tax );
+
+                            // Taxon
+                            foreach ( $tp->taxon as $t )
                             {
-                                $ta->taxon_entry =@ $t->entry->string;
-                                $ta->taxon_entry_lang =@ $t->entry->string->attributes()['language'];
+                                $ta = new Taxon();
+                                $ta->taxon_id_string = $t->id;
+                                if ( $t->entry->string )
+                                {
+                                    $ta->taxon_entry =@ $t->entry->string;
+                                    $ta->taxon_entry_lang =@ $t->entry->string->attributes()['language'];
+                                }
+                                $tax->taxon()->save( $ta );
                             }
-                            $tax->taxon()->save( $ta );
                         }
                     }
                 }
+                echo " \t|| no. ", ++$parsed, " \t|| Lomid: ", $general->lom_id, "\n";
             }
-
-            echo " \t|| no. ", ++$parsed, " \t|| Lomid: ", $general->lom_id, "\n";
         }
+
+        fclose( $fp );
 
         /*------------------------------------------------------------------------------------------------
          * END OF SCRIPT
