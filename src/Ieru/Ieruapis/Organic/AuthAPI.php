@@ -93,7 +93,7 @@ class AuthAPI
         $this->_connect_oauth();
 
         // Update the usertoken to inactive
-        $token = Token::where('token_chars', '=', @$_COOKIE['usertoken'])->first();
+        $token = Token::where('token_chars', '=', @$this->_params['usertoken'])->first();
         if ( is_object( $token ) )
         {
             $token->token_active = 0;
