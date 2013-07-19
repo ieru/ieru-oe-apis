@@ -356,6 +356,7 @@ class OrganicAPI
     {
         $lom['id'] = $resource->lom_id;
         $lom['location'] = $resource->technical->technicalslocation[0]->technicals_location_text;
+        $lom['xml'] = $resource->lom_original_file_name;
         $lom['identifiers'] = $resource->general->identifier[0]->identifier_entry;
 
         // Set languages
