@@ -17,8 +17,9 @@ class AnalyticsAPI
     /**
      * Constructor
      */
-    public function __construct ( $params, $config )
+    public function __construct ( $params, $config, $databases = null )
     {
+        $this->_db     = $databases;
         $this->_params = $params;
         $this->_config = $config;
     }
@@ -88,8 +89,8 @@ class AnalyticsAPI
     {
         try
         {
-            $db_info = $this->_config->get_db_analytics_info();
-            $this->_db = new \PDO( 'mysql:host='.$db_info['host'].';dbname='.$db_info['database'], $db_info['username'], $db_info['password'] );
+            $db_info = $this->_db['analytics'];
+            $this->_db_al = new \PDO( 'mysql:host='.$db_info['host'].';dbname='.$db_info['database'], $db_info['username'], $db_info['password'] );
             $data['service_id']       = 1;
            @$data['request_language'] = $this->_params['lang'];
             $data['request_string']   = $this->_params['request_string'];
@@ -138,7 +139,7 @@ class AnalyticsAPI
 
         // Esto está haciendo que falle cuando hay varios filtros activos
         // Store in the database the Analytics Service database
-        $stmt = $this->_db->prepare( 'INSERT INTO request SET '.implode( ',', $set ) );
+        $stmt = $this->_db_al->prepare( 'INSERT INTO request SET '.implode( ',', $set ) );
         $stmt->execute( $info );
     }
 
@@ -264,7 +265,7 @@ class AnalyticsAPI
     {
         try 
         {
-            $db = $this->_config->get_db_oauth_info();
+            $db = $this->_db['oauth'];
             $this->_oauthdb = new \PDO( 'mysql:host='.$db['host'].';dbname='.$db['database'], $db['username'], $db['password'] );
         } 
         catch ( \Exception $e ) 

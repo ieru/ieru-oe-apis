@@ -17,8 +17,9 @@ class GrnetAdapter
     /**
      * Constructor
      */
-    public function __construct ( $params, $config )
+    public function __construct ( $params, $config, $databases )
     {
+        $this->_db     = $databases;
         $this->_params = $params;
         $this->_config = $config;
     }
@@ -216,7 +217,7 @@ class GrnetAdapter
     {
         try 
         {
-            $db = $this->_config->get_db_oauth_info();
+            $db = $this->_db['oauth'];
             $this->_oauthdb = new \PDO( 'mysql:host='.$db['host'].';dbname='.$db['database'], $db['username'], $db['password'] );
         } 
         catch ( \Exception $e ) 

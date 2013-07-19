@@ -31,9 +31,9 @@ class Config
             $this->_routes['POST'][] = array( '/search',           'controller'=>'OrganicAPI#fetch_resources' );
             $this->_routes['GET'][]  = array( '/search/typeahead', 'controller'=>'OrganicAPI#fetch_typeahead' );
 
-            $this->_routes['GET'][]  = array( '/login',                   'controller'=>'AuthAPI#login' );
-            $this->_routes['GET'][]  = array( '/logout',                  'controller'=>'AuthAPI#logout' );
-            $this->_routes['POST'][] = array( '/register',                'controller'=>'AuthAPI#register' );
+            $this->_routes['GET'][]  = array( '/login',    'controller'=>'AuthAPI#login' );
+            $this->_routes['GET'][]  = array( '/logout',   'controller'=>'AuthAPI#logout' );
+            $this->_routes['POST'][] = array( '/register', 'controller'=>'AuthAPI#register' );
 
             $this->_routes['GET'][]  = array( '/users/:user/activate', 'controller'=>'AuthAPI#activate' );
         }
@@ -72,54 +72,6 @@ class Config
     public function get_iso_lang ()
     {
         return include( 'Languages.php' );
-    }
-
-    /**
-     * Get the data for connecting with the database
-     *
-     * @return array The data needed for connecting with the IEEE LOM database
-     */
-    public function get_db_info ()
-    {
-        return array( 
-            'driver'    => 'mysql',
-            'host'      => 'localhost',
-            'database'  => 'ieru_organic_resources',
-            'username'  => 'root',
-            'password'  => '',
-            'collation' => 'utf8_general_ci',
-            'prefix'    => '',
-            'charset'   => 'utf8'
-        );
-    }
-
-    /**
-    * Get the data for connecting with the OAUTH database
-    *
-    * @return array The data needed for connecting with the database
-    */
-    public function get_db_oauth_info ()
-    {
-        return array( 
-            'driver'    => 'mysql',
-            'host'      => 'localhost',
-            'database'  => 'ieru_organic_oauth',
-            'username'  => 'root',
-            'password'  => '',
-            'collation' => 'utf8_general_ci',
-            'prefix'    => '',
-            'charset'   => 'utf8'
-        );
-    }
-
-    /**
-    * Returns the IP of the server of the Analytics API
-    *
-    * @return string
-    */
-    public function get_analytics_server_ip ()
-    {
-        return 'http://api.dev';
     }
 
     /**

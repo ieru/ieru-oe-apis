@@ -26,8 +26,9 @@ class AuthAPI
      *
      * @param   array   The parameters sent through a POST request or parsed from the URL routing machine
      */
-    public function __construct ( &$params, &$config = null )
+    public function __construct ( &$params, &$config = null, $databases = null )
     {
+        $this->_db     = $databases;
         $this->_params = $params;
         $this->_config = $config;
 
@@ -299,7 +300,7 @@ class AuthAPI
     private function _connect_oauth ()
     {
         // Create database connection through Eloquent ORM
-        \Capsule\Database\Connection::make('main', $this->_config->get_db_oauth_info(), true);
+        \Capsule\Database\Connection::make('main', $this->_db['oauth'], true);
     }
 
     /**

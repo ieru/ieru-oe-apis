@@ -71,44 +71,6 @@ class Config
 	}
 
 	/**
-	 * Get the data for connecting with the ANALYTICS database
-	 *
-	 * @return array The data needed for connecting with the database
-	 */
-	public function get_db_analytics_info ()
-	{
-		return array( 
-            'driver'    => 'mysql',
-            'host'      => 'localhost',
-            'database'  => 'ieru_organic_analytics',
-            'username'  => 'root',
-            'password'  => '',
-            'collation' => 'utf8_general_ci',
-            'prefix'    => '',
-            'charset'   => 'utf8'
-		);
-	}
-
-	/**
-	 * Get the data for connecting with the OAUTH database
-	 *
-	 * @return array The data needed for connecting with the database
-	 */
-	public function get_db_oauth_info ()
-	{
-		return array( 
-            'driver'    => 'mysql',
-            'host'      => 'localhost',
-            'database'  => 'ieru_organic_oauth',
-            'username'  => 'root',
-            'password'  => '',
-            'collation' => 'utf8_general_ci',
-            'prefix'    => '',
-            'charset'   => 'utf8'
-		);
-	}
-
-	/**
 	 * Retuns an array with all the possible ISO 639-2 lang specification
 	 *
 	 * @return array An array with the 2 letter ISO language codes

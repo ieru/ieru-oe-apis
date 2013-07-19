@@ -25,16 +25,17 @@ class OrganicAPI
      *
      * @param   array   The parameters sent through a POST request or parsed from the URL routing machine
      */
-    public function __construct ( &$params, &$config = null )
+    public function __construct ( &$params, &$config = null, $databases = null )
     {
         $this->_params = $params;
         $this->_config = $config;
 
         $this->_lang     = $config->get_iso_lang();
         $this->_autolang = $config->get_autolang();
+        $this->_db = $databases;
 
         // Create database connection through Eloquent ORM
-        \Capsule\Database\Connection::make('main', $this->_config->get_db_info(), true);
+        \Capsule\Database\Connection::make('main', $this->_db['resources'], true);
     }
     
     /**
@@ -45,7 +46,7 @@ class OrganicAPI
     public function & get_search () 
     {
         # Request translation and resources for the searched word
-        $url = $this->_config->get_analytics_server_ip().'/api/analytics/search';
+        $url = API_SERVER.'/api/analytics/search';
         $data = $this->_curl_request( $url, $this->_params );
         $resources = json_decode( $data, true );
         $this->_params['lang'] = isset( $this->_params['lang'] ) ? $this->_params['lang'] : 'en';
