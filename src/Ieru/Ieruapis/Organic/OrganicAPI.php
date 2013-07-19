@@ -292,7 +292,7 @@ class OrganicAPI
                     else
                     {
                         $saved = true;
-                        $url = $this->_config->get_analytics_server_ip().'/api/analytics/translate';
+                        $url = API_SERVER.'/api/analytics/translate';
                         $data = array( 'text'=>$facet_name, 'from'=>'en', 'to'=>$lang, 'service'=>'microsoft' );
                         $tr = json_decode( $this->_curl_get_data( $url, $data ) );
                         $tr = $tr->data->translation;
