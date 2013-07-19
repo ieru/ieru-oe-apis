@@ -31,9 +31,7 @@ class GrnetAdapter
      */
     public function get_rating ()
     {
-        $entry = str_replace( '_', '/', $this->_params['entry'] );
-        $entry = str_replace( '___', '://', $entry );
-        $entry = str_replace( '@', '?', $entry );
+        $entry = $this->_params['entry'];
 
         try
         {
@@ -63,9 +61,7 @@ class GrnetAdapter
      */
     public function add_rating ()
     {
-        $entry = str_replace( '_', '/', $this->_params['entry'] );
-        $entry = str_replace( '___', '://', $entry );
-        $entry = str_replace( '@', '?', $entry );
+        $entry = $this->_params['entry'];
 
         $this->_params['id'] = 'Not Yet Implemented.';
 
@@ -123,9 +119,7 @@ class GrnetAdapter
      */
     public function get_tags ()
     {
-        $entry = str_replace( '_', '/', $this->_params['entry'] );
-        $entry = str_replace( '___', '://', $entry );
-        $entry = str_replace( '@', '?', $entry );
+        $entry = $this->_params['entry'];
 
         try
         {
@@ -142,7 +136,7 @@ class GrnetAdapter
         if ( @$tags[0]->noitemfound OR @$tags->norate OR @$tags[0]->notag )
             $tags = array();
 
-        $result = array( 'success'=>true, 'message'=>'Tags retrieved correctly', 'id'=>$this->_params['id'], 'data'=>$tags );
+        $result = array( 'success'=>true, 'message'=>'Tags retrieved correctly', 'id'=>$this->_params['entry'], 'data'=>$tags );
 
         return $result;
     }
@@ -152,9 +146,7 @@ class GrnetAdapter
      */
     public function get_history ()
     {
-        $entry = str_replace( '_', '/', $this->_params['entry'] );
-        $entry = str_replace( '___', '://', $entry );
-        $entry = str_replace( '@', '?', $entry );
+        $entry = $this->_params['entry'];
 
         try
         {
@@ -172,7 +164,7 @@ class GrnetAdapter
         if ( @$rating[0]->noitemfound || @$rating->norate )
             $rating = array();
 
-        $result = array( 'success'=>true, 'message'=>'Rating history retrieved correctly', 'id'=>$this->_params['id'], 'data'=>$rating );
+        $result = array( 'success'=>true, 'message'=>'Rating history retrieved correctly', 'id'=>$this->_params['entry'], 'data'=>$rating );
 
         return $result;
     }
@@ -182,9 +174,7 @@ class GrnetAdapter
      */
     public function get_review_history ()
     {
-        $entry = str_replace( '_', '/', $this->_params['entry'] );
-        $entry = str_replace( '___', '://', $entry );
-        $entry = str_replace( '@', '?', $entry );
+        $entry = $this->_params['entry'];
 
         try
         {
@@ -203,7 +193,7 @@ class GrnetAdapter
             $rating = array();
         }
 
-        $result = array( 'success'=>true, 'message'=>'Rating history retrieved correctly.', 'id'=>$this->_params['id'], 'data'=>$rating );
+        $result = array( 'success'=>true, 'message'=>'Rating history retrieved correctly.', 'id'=>$this->_params['entry'], 'data'=>$rating );
 
         return $result;
     }
