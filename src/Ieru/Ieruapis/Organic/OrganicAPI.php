@@ -228,12 +228,15 @@ class OrganicAPI
                             ->join('generals', 'loms.lom_id','=','generals.lom_id')
                             ->join('identifiers', 'generals.general_id','=','identifiers.general_id')
                             ->where('identifiers.identifier_entry','=',$uri['resource'])
-                            ->first(array( 'loms.lom_id' ) );
+                            ->first( array( 'loms.lom_id' ) );
 
-            $this->_retrieve_basic_data( $lom, $resource );
-            $this->_add_automatic_languages( $lom );
-
-            $results[] = $lom;
+            // Check that a resource was found
+            if ( is_object( $resource  ) )
+            {
+                $this->_retrieve_basic_data( $lom, $resource );
+                $this->_add_automatic_languages( $lom );
+                $results[] = $lom;
+            }
         }
 
         return $results;
