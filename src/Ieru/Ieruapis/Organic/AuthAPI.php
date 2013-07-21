@@ -241,8 +241,8 @@ class AuthAPI
         $mail->IsHTML(true);                                  // Set email format to HTML
 
         $mail->Subject = '[Organic.Edunet] New user registration';
-        $mail->Body    = '<p>Thank you for registering. You can activate your account following this link</p><p><a href="'.$this->_config->get_analytics_server_ip().'/#/user/register/'.$data['user_username'].'/'.$data['user_activation_hash'].'">'.$this->_config->get_analytics_server_ip().'/#/user/register/activation/'.$data['user_activation_hash'].'</a></p><p>Organic.Edunet website</p>';
-        $mail->AltBody = "Thank you for registering. You can activate your account following this link\n".$this->_config->get_analytics_server_ip()."/#/user/register/".$data['user_username']."/".$data['user_activation_hash']."\nOrganic.Edunet website";
+        $mail->Body    = '<p>Thank you for registering. You can activate your account following this link</p><p><a href="'.API_SERVER.'/#/user/register/'.$data['user_username'].'/'.$data['user_activation_hash'].'">'.$this->_config->get_analytics_server_ip().'/#/user/register/activation/'.$data['user_activation_hash'].'</a></p><p>Organic.Edunet website</p>';
+        $mail->AltBody = "Thank you for registering. You can activate your account following this link\n".API_SERVER."/#/user/register/".$data['user_username']."/".$data['user_activation_hash']."\nOrganic.Edunet website";
 
         if(!$mail->Send()) {
            //echo 'Message could not be sent.';
