@@ -120,22 +120,16 @@ class OrganicAPI
                 ->where('loms.lom_id','=',$this->_params['id'])
                 ->first();
 
+            if ( $resource )
+                $results = array( 'success'=>true, 'message'=>'Resource metadata retrieved.', 'data'=>$this->_make_resource( $resource ) );
+            else
+                $results = array( 'success'=>false, 'errcode'=>10, 'message'=>'API resource not found.' );
         }
         catch ( \Exception $e ) 
         {
             die( $e->getMessage() );
         }
 
-        if ( $resource )
-        {
-            $results = array( 'success'=>true, 'message'=>'Resource metadata retrieved.', 'data'=>$this->_make_resource( $resource ) );
-        }
-        else
-        {
-            $results['success'] = false;
-            $results['errcode'] = 10;
-            $results['message'] = 'API resource not found.';
-        } 
         return $results;
     }
 
