@@ -12,6 +12,7 @@ namespace Ieru\Ieruapis\Organic;
 
 use \Ieru\Restengine\Engine\Exception\APIException;
 use \Ieru\Ieruapis\Import\Models\Lom;
+use \Ieru\Ieruapis\Import\Models\Identifier;
 
 class OrganicAPI
 {
@@ -68,8 +69,12 @@ class OrganicAPI
         # Resources retrieved from Celi
         elseif ( isset( $resources['data']['resources'] ) )
         {
+            $res = array();
+            foreach ( $resources['data']['resources'] as $resource )
+                $res[] = $resource['resource'];
+
             # Get the metadata information of the resource
-            $records =& $this->_get_lom_data_of_resources( $resources['data']['resources'] );
+            $records =& $this->_get_lom_data_of_resources( $res );
             if ( count( $records ) > 0 )
             {
                 # Parses the facets for filtering the results
@@ -222,18 +227,13 @@ class OrganicAPI
         {
             $lom = array();
 
-            $resource = Lom::with(array('Technical.TechnicalsLocation', 'General.GeneralsTitle', 'General.GeneralsDescription', 
-                                'General.GeneralsLanguage','General.GeneralsKeyword.generalskeywordtext',
-                                'Educational.EducationalsTypicalagerange', 'Metametadata'))
-                            ->join('generals', 'loms.lom_id','=','generals.lom_id')
-                            ->join('identifiers', 'generals.general_id','=','identifiers.general_id')
-                            ->where('identifiers.identifier_entry','=',$uri['resource'])
-                            ->first( array( 'loms.lom_id' ) );
+            $resource = Identifier::where('identifier_entry','=',$uri)
+                                  ->first( array( 'lom_id' ) );
 
             // Check that a resource was found
             if ( is_object( $resource  ) )
             {
-                $this->_retrieve_basic_data( $lom, $resource );
+                $this->_retrieve_basic_data( $lom, $resource->lom );
                 $this->_add_automatic_languages( $lom );
                 $results[] = $lom;
             }
