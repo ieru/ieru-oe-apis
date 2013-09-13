@@ -20,7 +20,6 @@ class CeliService implements CacheAdapter
     {
         $request_uri = 'http://research.celi.it:8080/MT_caching_service/rest/cache/translation?text='.
                         urlencode( html_entity_decode( $data['text'] ) ).'&from='.$data['from'].'&to='.$data['to'].'&json_output=true';
-                        echo $request_uri; die();
         $response = $this->_curl_get_data( $request_uri );
 
         return $response;
