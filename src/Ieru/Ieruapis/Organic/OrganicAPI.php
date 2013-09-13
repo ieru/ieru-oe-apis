@@ -115,8 +115,9 @@ class OrganicAPI
         try 
         {
             $resource = Lom::with(array('Technical.TechnicalsLocation', 'General.GeneralsTitle', 'General.GeneralsDescription', 
-                    'General.GeneralsLanguage','General.GeneralsKeyword.generalskeywordtext',
-                    'Educational.EducationalsTypicalagerange', 'Metametadata'))
+                    'General.GeneralsLanguage','General.GeneralsKeyword.generalskeywordtext', 'Educational.educationalsuserrole',
+                    'Educational.EducationalsTypicalagerange', 'Educational.EducationalsContext', 'Metametadata',
+                    'Educational.EducationalsType'))
                 ->where('loms.lom_id','=',$this->_params['id'])
                 ->first();
 
@@ -354,6 +355,7 @@ class OrganicAPI
     {
         $lom['id'] = $resource->lom_id;
         $lom['location'] = $resource->technical->technicalslocation[0]->technicals_location_text;
+        $lom['format'] = $resource->technical->technicalsformat[0]->technicals_format_text;
         $lom['xml'] = $resource->lom_original_file_name;
         $lom['identifiers'] = $resource->general->identifier[0]->identifier_entry;
 
@@ -386,6 +388,22 @@ class OrganicAPI
                     $lom['texts'][$text->generals_keywords_text_lang]['keywords'][] = $text->generals_keywords_text_string;
                 elseif ( $resource->metametadata->metametadata_lang )
                     $lom['texts'][$resource->metametadata->metametadata_lang]['keywords'][] = $text->generals_keywords_text_string;
+        // Educational contexts
+        foreach ( $resource->educational as $res )
+            foreach ( $res->educationalscontext as $edu )
+                $lom['educational'][] = $edu->educationals_context_string;
+        // Educational types
+        foreach ( $resource->educational as $res )
+            foreach ( $res->educationalstype as $edu )
+                $lom['types'][] = $edu->educationals_type_string;
+        // Intended audience
+        foreach ( $resource->educational as $res )
+            foreach ( $res->educationalsuserrole as $edu)
+                $lom['audience'][] = $edu->educationals_userrole_string;
+        // Set copyright info
+        $lom['copyright']['has_copyright'] = $resource->right->right_copyright;
+        $lom['copyright']['language'] = $resource->right->right_description;
+        $lom['copyright']['description'] = $resource->right->right_description;
 
         // Adds basic information
         foreach ( $lom['texts'] as $key=>&$language )
