@@ -179,7 +179,7 @@ class OrganicAPI
         $auto = array();
 
         // Make request
-        $url = 'http://research.celi.it:8080/OrganicLinguaSolr/select/?q=*%3A*&facet=true&facet.field=autocompletion&facet.mincount=1&facet.prefix='.$this->_params['text'].'&rows=0&wt=json';
+        $url = 'http://demo.celi.it:9095/OrganicLinguaSolr/select/?q=*%3A*&facet=true&facet.field=autocompletion&facet.mincount=1&facet.prefix='.$this->_params['text'].'&rows=0&wt=json';
         $ch = curl_init();
         curl_setopt( $ch, CURLOPT_URL, $url );
         curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
