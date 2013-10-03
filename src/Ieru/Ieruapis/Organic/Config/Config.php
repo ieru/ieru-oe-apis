@@ -73,12 +73,4 @@ class Config
     {
         return include( 'Languages.php' );
     }
-
-    /**
-    *
-    */
-    public function get_resources_langs ()
-    {
-        return include( 'LanguagesBanners.php' );
-    }
 }
