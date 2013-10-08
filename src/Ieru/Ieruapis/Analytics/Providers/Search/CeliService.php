@@ -18,7 +18,8 @@ class CeliService implements MultilingualSearchAdapter
 
     public function request ( &$data, &$request_uri, &$config = null )
     {
-        $filters = $this->_format_filters( $data, $config );
+        $filters = str_replace( '|" AND ', '" OR ', $this->_format_filters( $data, $config ) );
+        $filters = str_replace( '|', '', $filters );
 
         # Format the request URI, check documentation for more details. This will return a json array.
         $data['filter'] = ( isset( $data['filter'] ) ) ? $data['filter'] : '*';
@@ -27,7 +28,7 @@ class CeliService implements MultilingualSearchAdapter
                        '&rows='.$data['limit'].
                        '&fl=general_identifier%2Cscore&wt=json&explainOther=&hl.fl='.
                        '&facet=true&facet.field=educationalContext&facet.field=language&facet.field=technicalFormat'.
-                       '&facet.field=collection&facet.field=educationalRole'.
+                       '&facet.field=collection&facet.field=educationalRole&facet.field=educationalLearningResourceType'.
                        '&fq='.urlencode( str_replace('@', '/', $filters ) );
         $response = $this->_curl_get_data( $request_uri );
         return $response;
