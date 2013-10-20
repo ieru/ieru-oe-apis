@@ -18,8 +18,7 @@ class CeliService implements MultilingualSearchAdapter
 
     public function request ( &$data, &$request_uri, &$config = null )
     {
-        $filters = str_replace( '|" AND ', '" OR ', $this->_format_filters( $data, $config ) );
-        $filters = str_replace( '|', '', $filters );
+        $filters = $this->_format_filters( $data, $config );
 
         # Format the request URI, check documentation for more details. This will return a json array.
         $data['filter'] = ( isset( $data['filter'] ) ) ? $data['filter'] : '*';
@@ -116,13 +115,28 @@ class CeliService implements MultilingualSearchAdapter
                     }
                     else
                     {
-                        $f[] = $filter['clave'].':"'.trim( $filter['valor'] ).'"';
+                        $orx = [];
+                        $or = explode( '|', $filter['valor'] );
+                        if ( count( $or ) > 1 )
+                        {
+                            foreach ( $or as $o )
+                            {
+                                $orx[] = $filter['clave'].':"'.trim( $o ).'"';
+                            }
+                            $or_text = '('.implode( ' OR ', $orx ).')';
+                            $f[] = $or_text;
+                        }
+                        else
+                        {
+                            $f[] = $filter['clave'].':"'.trim( $filter['valor'] ).'"';
+                        }
                     }
                     
                 }
             }
             $filters = implode( ' AND ', $f );
         }
+        //echo $filters; die();
         return $filters;
     }
 
