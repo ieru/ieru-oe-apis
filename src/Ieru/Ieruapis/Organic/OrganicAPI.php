@@ -269,6 +269,7 @@ class OrganicAPI
 
         // Cycle through the facets
         $i = $j = 0;
+        $loaded = false;
         foreach ( $resources['data']['facets'] as $key=>&$facet )
         {
             if ( isset( $facet['filters'] ) )
@@ -286,6 +287,22 @@ class OrganicAPI
                          AND array_key_exists( $lang, $translations[strtolower( $v['filter'] )] )  )
                     {
                         $tr = $translations[strtolower($v['filter'])][$lang];
+                    }
+                    // Get name of the collections
+                    elseif ( $facet['facet'] == 'collection' )
+                    {
+                        $saved = true;
+                        if ( !$loaded )
+                        {
+                            $loaded = true;
+                            $url = 'http://83.212.96.169:8080/REGFILES/OESources.json';
+                            $parsed_colls = json_decode( $this->_curl_get_data( $url, array() ) );
+                        }
+                        $tr = @$parsed_colls->$v['filter']->shortName;
+                        if ( @$tr AND !is_null( $tr ) )
+                            $translations[strtolower($v['filter'])][$lang] = $tr;
+                        else
+                            $translations[strtolower($v['filter'])][$lang] = $v['filter'];
                     }
                     else
                     {
