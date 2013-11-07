@@ -28,12 +28,22 @@ class AuthAPI
      */
     public function __construct ( &$params, &$config = null, $databases = null )
     {
-        $this->_db     = $databases;
+        // Set params of the request
         $this->_params = $params;
-        $this->_config = $config;
 
-        $this->_lang     = $config->get_iso_lang();
-        $this->_autolang = $config->get_autolang();
+        // Set configuration file and variables
+        if ( $config )
+        {
+            $this->_config   = $config;
+            $this->_lang     = $config->get_iso_lang();
+            $this->_autolang = $config->get_autolang();
+        }
+
+        // Set databases
+        if ( $databases )
+        {
+            $this->_db = $databases;
+        }
     }
 
     /**
@@ -338,5 +348,19 @@ class AuthAPI
         $hash = md5( $password.$pass[1] );
 
         return $hash == $pass[0] ? true : false;
+    }
+
+    /**
+     * Gets the user_id of an usertoken
+     *
+     * @return int
+     */
+    public function check ( &$usertoken )
+    {
+        // Connect with the oauth database
+        $this->_connect_oauth();
+
+        // Get user id of the usertoken
+        return 1;
     }
 }

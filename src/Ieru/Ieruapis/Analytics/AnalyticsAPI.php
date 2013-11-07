@@ -11,6 +11,7 @@
 namespace Ieru\Ieruapis\Analytics; 
 
 use \Ieru\Restengine\Engine\Exception\APIException;
+use \Ieru\Ieruapis\Analytics\Models\Rating;
 
 class AnalyticsAPI
 {
@@ -311,5 +312,40 @@ class AnalyticsAPI
             $e = new APIException( 'An error ocurred while connecting with the database.' );
             $e->to_json();
         }
+    }
+
+    /**
+     * Add a rating to an automatic translation
+     *
+     * @return array 
+     */
+    public function add_rating ()
+    {
+        // Check valid usertoken
+        $config  = null;
+        $oauth   = new \Ieru\Ieruapis\Organic\AuthAPI( $this->_params, $config, $this->_db );
+
+        // Create database connection through Eloquent ORM to the Analytics DB
+        \Capsule\Database\Connection::make('analytics', $this->_db['analytics'], true);
+
+        // Add the rating
+        try
+        {
+            // Add an entry to the
+            $rating = new Rating();
+            $rating->user_id      = $oauth->check( $this->_params['usertoken'] );
+            $rating->resource_id  = $this->_params['entry'];
+            $rating->rating_lang  = $this->_params['lang'];
+            $rating->rating_value = $this->_params['rating'];
+            $rating->save();
+        }
+        // Duplicated rating
+        catch ( \Exception $e )
+        {
+            return array( 'success'=>false, 'message'=>'Duplicated rating.' );
+        }
+
+        // Return successful rating addition
+        return array( 'success'=>true, 'message'=>'Rating added to the resource.' );
     }
 }

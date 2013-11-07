@@ -23,9 +23,9 @@ class Config
 	{
 		if ( !$this->_routes )
 		{
-			$this->_routes['GET'][] = array( '/search',    'controller'=>'AnalyticsAPI#get_search' );
+			$this->_routes['GET'][] = array( '/search', 'controller'=>'AnalyticsAPI#get_search' );
 
-			$this->_routes['GET'][] = array( '/translate', 'controller'=>'AnalyticsAPI#get_translation' );
+			$this->_routes['GET'][] = array( '/translate',           'controller'=>'AnalyticsAPI#get_translation' );
                   $this->_routes['GET'][] = array( '/translate/languages', 'controller'=>'AnalyticsAPI#get_languages' );
                   $this->_routes['GET'][] = array( '/translate/providers', 'controller'=>'AnalyticsAPI#get_providers' );
 
@@ -34,7 +34,9 @@ class Config
 			$this->_routes['GET'][] = array( '/resources/:entry/ratings/reviews', 'controller'=>'GrnetAdapter#get_review_history' );
 			$this->_routes['GET'][] = array( '/resources/:entry/tags',            'controller'=>'GrnetAdapter#get_tags' );
 
-			$this->_routes['POST'][] = array( '/resources/:entry/rating',         'controller'=>'GrnetAdapter#add_rating' );
+			$this->_routes['POST'][] = array( '/resources/:entry/rating', 'controller'=>'GrnetAdapter#add_rating' );
+
+                  $this->_routes['POST'][] = array( '/resources/:entry/translation/:lang/ratings', 'controller'=>'AnalyticsAPI#add_rating' );
 		}
 		return $this->_routes;
 	}
