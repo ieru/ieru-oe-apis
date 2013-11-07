@@ -342,10 +342,72 @@ class AnalyticsAPI
         // Duplicated rating
         catch ( \Exception $e )
         {
-            return array( 'success'=>false, 'message'=>'Duplicated rating.' );
+            
         }
 
+        // Retrieve rating
+        $rating  = 0;
+        $ratings = Rating::where( 'rating_lang', '=', $this->_params['lang'] )->get();
+        $votes   = $ratings->count();
+        foreach ( $ratings as $vote )
+            $rating += $vote->rating_value;
+
         // Return successful rating addition
-        return array( 'success'=>true, 'message'=>'Rating added to the resource.' );
+        return array( 'success'=>true, 'message'=>'Rating added to the resource.', 'data'=>array( 'rating'=>round( $rating / $votes ), 'votes'=>$votes ) );
+    }
+
+    /**
+     * Retrieve the rating of a translation
+     *
+     * @return array
+     */
+    public function get_rating ()
+    {
+        // Create database connection through Eloquent ORM to the Analytics DB
+        \Capsule\Database\Connection::make( 'analytics', $this->_db['analytics'], true );
+
+        // Retrieve rating
+        $ratings = Rating::where( 'rating_lang', '=', $this->_params['lang'] )->get();
+
+        // Return information
+        if ( $ratings->count() )
+        {
+            $votes = $ratings->count();
+            foreach ( $ratings as $vote )
+                @$rating += $vote->rating_value;
+
+            return array( 'success'=>true, 'message'=>'Rating retrieved for the translation.', 'data'=>array( 'rating'=>round( $rating / $votes ), 'votes'=>$votes ) );
+        }
+        else
+        {
+            return array( 'success'=>false, 'message'=>'No ratings yet for the resource.' );
+        }
+    }
+
+    /**
+     * Retrieve the ratings of a translation for a given resource
+     * @return array
+     */
+    public function get_ratings_history ()
+    {
+        // Create database connection through Eloquent ORM to the Analytics DB
+        \Capsule\Database\Connection::make( 'analytics', $this->_db['analytics'], true );
+
+        // Retrieve rating
+        $ratings = Rating::where( 'rating_lang', '=', $this->_params['lang'] )->get();
+
+        // Return information
+        if ( $ratings->count() )
+        {
+            $formatted = array();
+            foreach ( $ratings as $rating )
+                $formatted[] = array( 'userid'=>$rating->user_id, 'ratingMean'=>$rating->rating_value, 'rated_on'=>$rating->updated_at );
+
+            return array( 'success'=>true, 'message'=>'Ratings retrieved for the translation.', 'data'=>$formatted );
+        }
+        else
+        {
+            return array( 'success'=>false, 'message'=>'No ratings yet for the resource.' );
+        }
     }
 }
