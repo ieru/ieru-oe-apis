@@ -335,7 +335,7 @@ class AnalyticsAPI
             $rating = new Rating();
             $rating->user_id      = $oauth->check( $this->_params['usertoken'] );
             $rating->resource_id  = $this->_params['entry'];
-            $rating->rating_lang  = $this->_params['lang'];
+            $rating->translation_id  = $this->_params['lang'];
             $rating->rating_value = $this->_params['rating'];
             $rating->save();
         }
@@ -347,7 +347,7 @@ class AnalyticsAPI
 
         // Retrieve rating
         $rating  = 0;
-        $ratings = Rating::where( 'rating_lang', '=', $this->_params['lang'] )->get();
+        $ratings = Rating::where( 'translation_id', '=', $this->_params['lang'] )->get();
         $votes   = $ratings->count();
         foreach ( $ratings as $vote )
             $rating += $vote->rating_value;
@@ -367,7 +367,7 @@ class AnalyticsAPI
         \Capsule\Database\Connection::make( 'analytics', $this->_db['analytics'], true );
 
         // Retrieve rating
-        $ratings = Rating::where( 'rating_lang', '=', $this->_params['lang'] )->get();
+        $ratings = Rating::where( 'translation_id', '=', $this->_params['lang'] )->get();
 
         // Return information
         if ( $ratings->count() )
@@ -394,7 +394,7 @@ class AnalyticsAPI
         \Capsule\Database\Connection::make( 'analytics', $this->_db['analytics'], true );
 
         // Retrieve rating
-        $ratings = Rating::where( 'rating_lang', '=', $this->_params['lang'] )->get();
+        $ratings = Rating::where( 'translation_id', '=', $this->_params['lang'] )->get();
 
         // Return information
         if ( $ratings->count() )

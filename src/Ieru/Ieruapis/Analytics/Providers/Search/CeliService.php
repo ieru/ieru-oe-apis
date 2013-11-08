@@ -20,11 +20,19 @@ class CeliService implements MultilingualSearchAdapter
     {
         $filters = $this->_format_filters( $data, $config );
 
+        // Experimental search options
+        $data['semanticexpansion'] = $data['semanticexpansion'] ? $data['semanticexpansion'] : 'false';
+        $data['prfexpansion'] = $data['prfexpansion'] ? $data['prfexpansion'] : 'false';
+        $data['monolingual'] = $data['monolingual'] ? $data['monolingual'] : 'false';
+
         # Format the request URI, check documentation for more details. This will return a json array.
         $data['filter'] = ( isset( $data['filter'] ) ) ? $data['filter'] : '*';
         $request_uri = 'http://research.celi.it:8080/OrganicLinguaSolr/select?indent=on&version=2.2'.
                        '&q='.urlencode( html_entity_decode( $data['text'] ) ).'&start='.$data['offset'].
                        '&rows='.$data['limit'].
+                       '&semanticExpansion='.$data['semanticexpansion'].
+                       '&prfExpansion='.$data['prfexpansion'].
+                       '&monolingual='.$data['monolingual'].
                        '&fl=general_identifier%2Cscore&wt=json&explainOther=&hl.fl='.
                        '&facet=true&facet.field=educationalContext&facet.field=language&facet.field=technicalFormat'.
                        '&facet.field=collection&facet.field=educationalRole&facet.field=educationalLearningResourceType'.
