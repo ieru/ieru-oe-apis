@@ -34,13 +34,13 @@ class Config
 			$this->_routes['GET'][] = array( '/resources/:entry/ratings/reviews', 'controller'=>'GrnetAdapter#get_review_history' );
 			$this->_routes['GET'][] = array( '/resources/:entry/tags',            'controller'=>'GrnetAdapter#get_tags' );
 
-                  $this->_routes['GET'][] = array( '/resources/:entry/translation/:lang/rating',  'controller'=>'AnalyticsAPI#get_rating' );
-                  $this->_routes['GET'][] = array( '/resources/:entry/translation/:lang/ratings', 'controller'=>'AnalyticsAPI#get_ratings_history' );
+                  $this->_routes['GET'][] = array( '/resources/:entry/translation/:hash/rating',  'controller'=>'AnalyticsAPI#get_rating' );
+                  $this->_routes['GET'][] = array( '/resources/:entry/translation/:hash/ratings', 'controller'=>'AnalyticsAPI#get_ratings_history' );
 
 
 			$this->_routes['POST'][] = array( '/resources/:entry/rating', 'controller'=>'GrnetAdapter#add_rating' );
 
-                  $this->_routes['POST'][] = array( '/resources/:entry/translation/:lang/rating', 'controller'=>'AnalyticsAPI#add_rating' );
+                  $this->_routes['POST'][] = array( '/resources/:entry/translation/:hash/rating', 'controller'=>'AnalyticsAPI#add_rating' );
 		}
 		return $this->_routes;
 	}

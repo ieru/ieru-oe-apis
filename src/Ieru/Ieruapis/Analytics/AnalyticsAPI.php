@@ -333,21 +333,23 @@ class AnalyticsAPI
         {
             // Add an entry to the
             $rating = new Rating();
-            $rating->user_id      = $oauth->check( $this->_params['usertoken'] );
-            $rating->resource_id  = $this->_params['entry'];
-            $rating->translation_id  = $this->_params['lang'];
-            $rating->rating_value = $this->_params['rating'];
+            $rating->user_id          = $oauth->check( $this->_params['usertoken'] );
+            $rating->service_id       = trim( $this->_params['service'] ) == 'xerox' ? 2 : 1;
+            $rating->resource_id      = $this->_params['entry'];
+            $rating->translation_id   = $this->_params['hash'];
+            $rating->rating_value     = $this->_params['rating'];
+            $rating->translation_from = $this->_params['from'];
+            $rating->translation_lang = $this->_params['to'];
             $rating->save();
         }
         // Duplicated rating
         catch ( \Exception $e )
         {
-            
         }
 
         // Retrieve rating
         $rating  = 0;
-        $ratings = Rating::where( 'translation_id', '=', $this->_params['lang'] )->get();
+        $ratings = Rating::where( 'translation_id', '=', $this->_params['hash'] )->get();
         $votes   = $ratings->count();
         foreach ( $ratings as $vote )
             $rating += $vote->rating_value;
@@ -367,7 +369,7 @@ class AnalyticsAPI
         \Capsule\Database\Connection::make( 'analytics', $this->_db['analytics'], true );
 
         // Retrieve rating
-        $ratings = Rating::where( 'translation_id', '=', $this->_params['lang'] )->get();
+        $ratings = Rating::where( 'translation_id', '=', $this->_params['hash'] )->get();
 
         // Return information
         if ( $ratings->count() )
@@ -394,7 +396,7 @@ class AnalyticsAPI
         \Capsule\Database\Connection::make( 'analytics', $this->_db['analytics'], true );
 
         // Retrieve rating
-        $ratings = Rating::where( 'translation_id', '=', $this->_params['lang'] )->get();
+        $ratings = Rating::where( 'translation_id', '=', $this->_params['hash'] )->get();
 
         // Return information
         if ( $ratings->count() )
