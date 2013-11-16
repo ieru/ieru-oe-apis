@@ -62,7 +62,6 @@ class Config
 	 */
 	public function get_default_translation_services ()
 	{
-            //return array();
 		return array( 'es'=>'xerox', 'fr'=>'xerox', 'de'=>'xerox', 'it'=>'xerox' );
 	}
 

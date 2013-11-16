@@ -55,7 +55,7 @@ class AuthAPI
     {
         // Check that both parameters required for login are set
         if ( !isset( $this->_params['username'] ) OR !isset( $this->_params['password'] ) )
-            return array( 'success'=>false, 'message'=>'Wrong parameters count for log in.' );
+            return array( 'success'=>false, 'message'=>923 );
 
         // Try to connect to the database
         $this->_connect_oauth();
@@ -65,11 +65,11 @@ class AuthAPI
         
         // Wrong username
         if ( !is_object( $user ) )
-            return array( 'success'=>false, 'message'=>'Wrong username or password' );
+            return array( 'success'=>false, 'message'=>922 );
 
         // Separate user password
         if ( !$this->_check_password( $this->_params['password'], $user->user_password ) )
-            return array( 'success'=>false, 'message'=>'Wrong username or password.' );
+            return array( 'success'=>false, 'message'=>922 );
 
         // Try to retrieve token for IP and active session, creating a new token if none
         // User can only be logged from one place at a time
@@ -87,7 +87,7 @@ class AuthAPI
         }
 
         // Return the token
-        return array( 'success'=>true, 'message'=>'Correct credentials.', 'data'=>array( 'usertoken'=>$token->token_chars ) );
+        return array( 'success'=>true, 'message'=>921, 'data'=>array( 'usertoken'=>$token->token_chars ) );
     }
 
     /**
@@ -97,7 +97,7 @@ class AuthAPI
     {
         // Check that both parameters required for login are set
         if ( !isset( $this->_params['usertoken'] ) )
-            return array( 'success'=>false, 'message'=>'User token for logging out not specified.' );
+            return array( 'success'=>false, 'message'=>920 );
 
         // Try to connect to the database
         $this->_connect_oauth();
@@ -137,20 +137,24 @@ class AuthAPI
     public function register ()
     {
         // Check that both parameters required for login are set
+        if ( !isset( $this->_params['form-register-accept'] ) )
+            return array( 'success'=>false, 'message'=>900 );
+
+        // Check that both parameters required for login are set
         if ( !isset( $this->_params['form-register-username'] ) OR !isset( $this->_params['form-register-password'] ) OR !isset( $this->_params['form-register-email'] ) )
-            return array( 'success'=>false, 'message'=>'Wrong parameters count for registering user.' );
+            return array( 'success'=>false, 'message'=>901 );
 
         // Check that both parameters required for login are set
         if ( !$this->_params['form-register-username'] OR !$this->_params['form-register-password'] OR !$this->_params['form-register-email'] )
-            return array( 'success'=>false, 'message'=>'The parameters can not be empty.' );
+            return array( 'success'=>false, 'message'=>902 );
 
         // Check that both parameters required for login are set
         if ( preg_match( '/[^a-z0-9]/si', $this->_params['form-register-username'] ) )
-            return array( 'success'=>false, 'message'=>'The username can not contain special characters.' );
+            return array( 'success'=>false, 'message'=>903 );
 
         // Check that both passwords are the same
         if ( $this->_params['form-register-password'] != $this->_params['form-register-repeat-password'] )
-            return array( 'success'=>false, 'message'=>'The passwords does not match.' );
+            return array( 'success'=>false, 'message'=>904 );
 
         // Try to connect database = if an error occurs, it will return an array, nothing otherwise
         if ( $connect = $this->_connect_oauth() )
@@ -171,16 +175,16 @@ class AuthAPI
             {
                 $data = $user->toarray();
                 $this->_send_activation_email( $data );
-                return array( 'success'=>true, 'message'=>'User created.' );
+                return array( 'success'=>true, 'message'=>905 );
             }
             else
             {
-                return array( 'success'=>false, 'message'=>'There is already an user with that username or email.' );
+                return array( 'success'=>false, 'message'=>906 );
             }
         }
         catch ( \Exception $e )
         {
-            return array( 'success'=>false, 'message'=>'There is already an user with that username or email.' );
+            return array( 'success'=>false, 'message'=>906 );
         }
     }
 
@@ -191,11 +195,11 @@ class AuthAPI
     {
         // Check if the parameters are correct
         if ( !isset( $this->_params['user'] ) OR !isset( $this->_params['hash'] ) )
-            return array( 'success'=>false, 'message'=>'Wrong parameter count for activating user.' );
+            return array( 'success'=>false, 'message'=>907 );
 
         // Check if the parameters are correct
         if ( !$this->_params['user'] OR !$this->_params['hash'] )
-            return array( 'success'=>false, 'message'=>'Wrong parameters for activating user.' );
+            return array( 'success'=>false, 'message'=>908 );
 
         $data['user_active'] = 1;
 
@@ -217,17 +221,17 @@ class AuthAPI
                 $user->user_active = 1;
                 $user->user_activation_hash = '';
                 $user->save();
-                return array( 'success'=>true, 'message'=>'User activated.' );
+                return array( 'success'=>true, 'message'=>909 );
             }
             else
             {
 
-                return array( 'success'=>false, 'message'=>'User not found or already active.' );
+                return array( 'success'=>false, 'message'=>910 );
             }
         }
         catch ( \Exception $e )
         {
-            return array( 'success'=>false, 'message'=>'An error ocurred activating the account.' );
+            return array( 'success'=>false, 'message'=>911 );
         }
     }
 

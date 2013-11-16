@@ -117,10 +117,15 @@ class ImportAPI
      */
     public function import ()
     {
+        $call_a = function ( $matches ) 
+        {
+            return preg_replace( '/&/si', '&amp;', $matches[0] ); 
+        };
+
         // Avoid problems with exceeding max time of execution of script
         set_time_limit(0);
-        //gc_enable();
-        //ini_set('memory_limit', '3000M');
+        gc_enable();
+        ini_set('memory_limit', '3000M');
 
         $fp = fopen( 'duplicated_ids.txt', 'wb' );
 
@@ -139,7 +144,10 @@ class ImportAPI
             }
 
             echo $name;
-            $xml = simplexml_load_file( $file );
+            $file = preg_replace_callback('/(?:<location>)(.*?)(?:<\/location>)/si', $call_a, $file);
+            $xml = simplexml_load_file( $file, null, LIBXML_NOENT );
+
+            unset( $file );
 
             // Get id of the resource and collection
             $split = explode( '/', $name );
