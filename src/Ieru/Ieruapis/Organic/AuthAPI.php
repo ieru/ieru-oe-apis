@@ -144,9 +144,17 @@ class AuthAPI
         if ( !isset( $this->_params['form-register-username'] ) OR !isset( $this->_params['form-register-password'] ) OR !isset( $this->_params['form-register-email'] ) )
             return array( 'success'=>false, 'message'=>901 );
 
-        // Check that both parameters required for login are set
-        if ( !$this->_params['form-register-username'] OR !$this->_params['form-register-password'] OR !$this->_params['form-register-email'] )
+        // Check that the username length is correct
+        if ( strlen( $this->_params['form-register-username'] ) < 3 )
             return array( 'success'=>false, 'message'=>902 );
+
+        // Check that the password length is correct
+        if ( strlen( $this->_params['form-register-password'] ) < 6 OR preg_match( '/[^a-z0-9]/si', $this->_params['form-register-password'] ) )
+            return array( 'success'=>false, 'message'=>912 );
+
+        // Check that the email is correct
+        if ( !filter_var( $this->_params['form-register-email'], FILTER_VALIDATE_EMAIL ) )
+            return array( 'success'=>false, 'message'=>914 );
 
         // Check that both parameters required for login are set
         if ( preg_match( '/[^a-z0-9]/si', $this->_params['form-register-username'] ) )
