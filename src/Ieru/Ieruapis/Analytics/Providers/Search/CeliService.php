@@ -24,6 +24,7 @@ class CeliService implements MultilingualSearchAdapter
         $data['semanticexpansion'] = $data['semanticexpansion'] ? $data['semanticexpansion'] : 'false';
         $data['prfexpansion'] = $data['prfexpansion'] ? $data['prfexpansion'] : 'false';
         $data['monolingual'] = $data['monolingual'] ? $data['monolingual'] : 'false';
+        $data['guesslanguage'] = $data['guesslanguage'] ? $data['guesslanguage'] : '';
 
         # Format the request URI, check documentation for more details. This will return a json array.
         $data['filter'] = ( isset( $data['filter'] ) ) ? $data['filter'] : '*';
@@ -33,6 +34,7 @@ class CeliService implements MultilingualSearchAdapter
                        '&semanticExpansion='.$data['semanticexpansion'].
                        '&prfExpansion='.$data['prfexpansion'].
                        '&monolingual='.$data['monolingual'].
+                       '&language='.$data['guesslanguage'].
                        '&fl=general_identifier%2Cscore&wt=json&explainOther=&hl.fl='.
                        '&facet=true&facet.field=educationalContext&facet.field=language&facet.field=technicalFormat'.
                        '&facet.field=collection&facet.field=educationalRole&facet.field=educationalLearningResourceType'.
