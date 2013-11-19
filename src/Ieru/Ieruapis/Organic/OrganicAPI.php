@@ -279,43 +279,7 @@ class OrganicAPI
                 {
                     $facet_name = ( $facet['facet'] == 'language' ) ? $this->_lang[$v['filter']] : $v['filter'];
                     $facets[$i]['name'] = $facet['facet'];
-
-                    // Check if there is a tranlation for it in the translations array,
-                    // or request a translation to the translation service (and then
-                    // it will be stored in the array and sent to a file)
-                    /*if ( array_key_exists( strtolower( $v['filter'] ), $translations )
-                         AND array_key_exists( $lang, $translations[strtolower( $v['filter'] )] )  )
-                    {*/
-                        $tr = $translations[strtolower($v['filter'])][$lang];
-                    /*}
-                    // Get name of the collections
-                    elseif ( $facet['facet'] == 'collection' )
-                    {
-                        $saved = true;
-                        if ( !$loaded )
-                        {
-                            $loaded = true;
-                            $url = 'http://83.212.96.169:8080/REGFILES/OESources.json';
-                            $parsed_colls = json_decode( $this->_curl_get_data( $url, array() ) );
-                        }
-                        $tr = @$parsed_colls->$v['filter']->shortName;
-                        if ( @$tr AND !is_null( $tr ) )
-                            $translations[strtolower($v['filter'])][$lang] = $tr;
-                        else
-                            $translations[strtolower($v['filter'])][$lang] = $v['filter'];
-                    }
-                    else
-                    {
-                        $saved = true;
-                        $url = API_SERVER.'/api/analytics/translate';
-                        $data = array( 'text'=>$facet_name, 'from'=>'en', 'to'=>$lang, 'service'=>'microsoft' );
-                        $tr = json_decode( $this->_curl_get_data( $url, $data ) );
-                        $tr = $tr->data->translation;
-                        $translations[strtolower($v['filter'])][$lang] = $tr;
-                    }*/
-
-                    // create filter entry
-                    $facets[$i]['results'][] = array( 'filter'=>$facet_name, 'value'=>$v['resources'], 'translation'=>$tr );
+                    $facets[$i]['results'][] = array( 'filter'=>$facet_name, 'value'=>$v['resources'], 'translation'=>@$translations[strtolower($v['filter'])][$lang] );
                 }
                 $i++;
             }
