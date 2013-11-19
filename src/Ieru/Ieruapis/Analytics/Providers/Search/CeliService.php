@@ -24,7 +24,7 @@ class CeliService implements MultilingualSearchAdapter
         $data['semanticexpansion'] = $data['semanticexpansion'] ? $data['semanticexpansion'] : 'false';
         $data['prfexpansion'] = $data['prfexpansion'] ? $data['prfexpansion'] : 'false';
         $data['monolingual'] = $data['monolingual'] ? $data['monolingual'] : 'false';
-        $data['guesslanguage'] = $data['guesslanguage'] ? $data['guesslanguage'] : '';
+        $data['guesslanguage'] = isset( $data['guesslanguage'] ) ? $data['guesslanguage'] : '';
 
         # Format the request URI, check documentation for more details. This will return a json array.
         $data['filter'] = ( isset( $data['filter'] ) ) ? $data['filter'] : '*';
