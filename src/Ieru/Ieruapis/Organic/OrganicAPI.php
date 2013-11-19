@@ -283,11 +283,11 @@ class OrganicAPI
                     // Check if there is a tranlation for it in the translations array,
                     // or request a translation to the translation service (and then
                     // it will be stored in the array and sent to a file)
-                    if ( array_key_exists( strtolower( $v['filter'] ), $translations )
+                    /*if ( array_key_exists( strtolower( $v['filter'] ), $translations )
                          AND array_key_exists( $lang, $translations[strtolower( $v['filter'] )] )  )
-                    {
+                    {*/
                         $tr = $translations[strtolower($v['filter'])][$lang];
-                    }
+                    /*}
                     // Get name of the collections
                     elseif ( $facet['facet'] == 'collection' )
                     {
@@ -312,7 +312,7 @@ class OrganicAPI
                         $tr = json_decode( $this->_curl_get_data( $url, $data ) );
                         $tr = $tr->data->translation;
                         $translations[strtolower($v['filter'])][$lang] = $tr;
-                    }
+                    }*/
 
                     // create filter entry
                     $facets[$i]['results'][] = array( 'filter'=>$facet_name, 'value'=>$v['resources'], 'translation'=>$tr );
@@ -372,7 +372,7 @@ class OrganicAPI
     {
         $lom['id'] = $resource->lom_id;
         $lom['location'] = $resource->technical->technicalslocation[0]->technicals_location_text;
-        $lom['format'] = $resource->technical->technicalsformat[0]->technicals_format_text;
+        $lom['format'] = @$resource->technical->technicalsformat[0]->technicals_format_text;
         $lom['xml'] = $resource->lom_original_file_name;
         $lom['identifiers'] = $resource->general->identifier[0]->identifier_entry;
 
