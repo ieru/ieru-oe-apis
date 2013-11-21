@@ -216,7 +216,7 @@ class OrganicAPI
 
         // Connect with the old xmls database
         if ( $_SERVER['REQUEST_METHOD'] == 'POST' )
-            \Capsule\Database\Connection::make('nav', $this->_db['navigational'] );
+            \Capsule\Database\Connection::make('nav', $this->_db['navigational'], true );
 
         // Loop the uris for getting the local LOM resource info
         foreach ( $uris as $uri ) 
