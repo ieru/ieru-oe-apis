@@ -13,6 +13,7 @@ namespace Ieru\Ieruapis\Organic;
 use \Ieru\Restengine\Engine\Exception\APIException;
 use \Ieru\Ieruapis\Import\Models\Lom;
 use \Ieru\Ieruapis\Import\Models\Identifier;
+use \Ieru\Ieruapis\Import\Models\TechnicalsLocation;
 
 class OrganicAPI
 {
@@ -216,19 +217,19 @@ class OrganicAPI
     private function & _get_lom_data_of_resources ( &$uris )
     {
         $results = array();
+        \Capsule\Database\Connection::make('nav', $this->_db['navigational'] );
 
         # Loop the uris for getting the local LOM resource info
         foreach ( $uris as $uri ) 
         {
             $lom = array();
-
-            $resource = Identifier::where('identifier_entry','=',$uri)
-                                  ->first( array( 'lom_id' ) );
+            $resource = Identifier::on('nav')->where('identifier_entry','=',$uri)->first();
+            $resource = $resource->lom;
 
             // Check that a resource was found
-            if ( is_object( $resource  ) )
+            if ( is_object( $resource ) )
             {
-                $this->_retrieve_basic_data( $lom, $resource->lom );
+                $this->_retrieve_basic_data( $lom, $resource );
                 $this->_add_automatic_languages( $lom );
                 $results[] = $lom;
             }
@@ -334,7 +335,7 @@ class OrganicAPI
      */
     private function _retrieve_basic_data ( &$lom, &$resource )
     {
-        $lom['id'] = $resource->lom_id;
+        $lom['id'] = $resource;
         $lom['location'] = $resource->technical->technicalslocation[0]->technicals_location_text;
         $lom['format'] = @$resource->technical->technicalsformat[0]->technicals_format_text;
         $lom['xml'] = $resource->lom_original_file_name;
