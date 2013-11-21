@@ -13,7 +13,6 @@ namespace Ieru\Ieruapis\Organic;
 use \Ieru\Restengine\Engine\Exception\APIException;
 use \Ieru\Ieruapis\Import\Models\Lom;
 use \Ieru\Ieruapis\Import\Models\Identifier;
-use \Ieru\Ieruapis\Import\Models\TechnicalsLocation;
 
 class OrganicAPI
 {
@@ -145,19 +144,16 @@ class OrganicAPI
         $results = array();
 
         $this->_params['lang'] = 'en';
-        $results['records'] =& $this->_get_lom_data_of_resources( $this->_params['identifiers'] );
+        $results['data']['resources'] =& $this->_get_lom_data_of_resources( $this->_params['identifiers'] );
 
-        if ( count( $results['records'] ) > 0 )
+        if ( count( $results['data']['resources'] ) > 0 )
         {
+            # Parses the facets for filtering the results
             $results['success'] = true;
-            $results['message'] = 'Resources retrieved.';
-            $results['total']   = $this->_params['total'];
-            $results['pages']   = ceil( $this->_params['total'] / $this->_params['limit'] );
-            $results['time']    = 0;
-            $results['offset']  = $this->_params['offset'];
-            $results['limit']   = $this->_params['limit'];
-
-            foreach ( $results['records'] as $key => &$value )
+            $results['message'] = 'Search results retrieved from Celi Service. ';
+            $results['data']['total']   = $this->_params['total'];
+            $results['data']['pages']   = ceil( $this->_params['total'] / $this->_params['limit'] );
+            foreach ( $results['data']['resources'] as $key => &$value )
                 $value['position'] = @++$cont;
         }
         else
@@ -217,26 +213,26 @@ class OrganicAPI
     private function & _get_lom_data_of_resources ( &$uris )
     {
         $results = array();
-        \Capsule\Database\Connection::make('nav', $this->_db['navigational'] );
 
-        # Loop the uris for getting the local LOM resource info
+        // Connect with the old xmls database
+        if ( $_SERVER['REQUEST_METHOD'] == 'POST' )
+            \Capsule\Database\Connection::make('nav', $this->_db['navigational'] );
+
+        // Loop the uris for getting the local LOM resource info
         foreach ( $uris as $uri ) 
         {
             $lom = array();
-            if ( $_REQUEST['METHOD'] == 'POST' )
-            {
-                $resource = Identifier::on('nav')->where('identifier_entry','=',$uri)->first();
-                $resource = $resource->lom;
-            }
-            else
-            {
-                $resource = Identifier::where('identifier_entry','=',$uri)
-                                      ->first( array( 'lom_id' ) );
-            }
 
+            // Code for the navigational search
+            if ( $_SERVER['REQUEST_METHOD'] == 'POST' )
+                $resource = Identifier::on('nav')->where('identifier_entry','=',$uri)->first();
+            // Code for standard search
+            else
+                $resource = Identifier::where('identifier_entry','=',$uri)->first();
             // Check that a resource was found
             if ( is_object( $resource ) )
             {
+                $resource = $resource->lom;
                 $this->_retrieve_basic_data( $lom, $resource );
                 $this->_add_automatic_languages( $lom );
                 $results[] = $lom;
@@ -338,12 +334,12 @@ class OrganicAPI
      * Retrieves the basic information of a resource
      *
      * @param   array   $lom        The array where to put the resulting info
-     * @param   object  $resrouce   Eloquent ORM database object with the resoource data
+     * @param   object  $resource   Eloquent ORM database object with the resoource data
      * @return void
      */
     private function _retrieve_basic_data ( &$lom, &$resource )
     {
-        $lom['id'] = $resource;
+        $lom['id'] = $resource->lom_id;
         $lom['location'] = $resource->technical->technicalslocation[0]->technicals_location_text;
         $lom['format'] = @$resource->technical->technicalsformat[0]->technicals_format_text;
         $lom['xml'] = $resource->lom_original_file_name;
