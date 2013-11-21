@@ -56,6 +56,9 @@ class AnalyticsAPI
             $class_name = 'Ieru\Ieruapis\Analytics\Providers\Search\\'.ucfirst( $service ).'Service';
             $service = new $class_name();
 
+            // Start of request
+            $this->_start = microtime( true );
+
             // Try to connect to the translation service
             if ( $service->check_status() )
                 $service->connect();
@@ -64,6 +67,9 @@ class AnalyticsAPI
 
             $response = $service->request( $this->_params, $this->_params['request_string'], $this->_config );
             $json = $service->format( json_decode( $response ) );
+
+            // End of request
+            $this->_end = microtime( true );
 
             // Save request in the database
             $this->_save_search_request( $response );
@@ -92,11 +98,13 @@ class AnalyticsAPI
         {
             $db_info = $this->_db['analytics'];
             $this->_db_al = new \PDO( 'mysql:host='.$db_info['host'].';dbname='.$db_info['database'], $db_info['username'], $db_info['password'] );
-            $data['service_id']       = 1;
-           @$data['request_language'] = $this->_params['lang'];
-            $data['request_string']   = $this->_params['request_string'];
-            $data['request_response'] = $response;
-            $data['request_term']     = $this->_params['text'];
+            $data['service_id']         = 1;
+           @$data['request_language']   = $this->_params['lang'];
+            $data['request_string']     = $this->_params['request_string'];
+            $data['request_response']   = $response;
+            $data['request_term']       = $this->_params['text'];
+            $data['request_start_time'] = @$this->_start;
+            $data['request_end_time']   = @$this->_end;
             $this->_save_request( $data );
 
             // Mirar en qué formato se van a guardar los logs a disco y cómo.
