@@ -223,8 +223,16 @@ class OrganicAPI
         foreach ( $uris as $uri ) 
         {
             $lom = array();
-            $resource = Identifier::on('nav')->where('identifier_entry','=',$uri)->first();
-            $resource = $resource->lom;
+            if ( $_REQUEST['METHOD'] == 'POST' )
+            {
+                $resource = Identifier::on('nav')->where('identifier_entry','=',$uri)->first();
+                $resource = $resource->lom;
+            }
+            else
+            {
+                $resource = Identifier::where('identifier_entry','=',$uri)
+                                      ->first( array( 'lom_id' ) );
+            }
 
             // Check that a resource was found
             if ( is_object( $resource ) )
