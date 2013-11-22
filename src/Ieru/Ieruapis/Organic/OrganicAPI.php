@@ -450,4 +450,58 @@ class OrganicAPI
         curl_close( $ch );
         return $data;
     }
+
+    /**
+     * Receive feedback from a form
+     */
+    public function feedback ()
+    {
+        if ( !@$this->_params['form-feedback-body'] 
+             OR !$this->_params['form-feedback-email'] 
+             OR !$this->_params['form-feedback-name'] 
+             OR !$this->_params['form-feedback-subject'] 
+             OR !@$this->_params['form-feedback-type']
+           )
+        {
+            $info = array( 'success'=>false, 'message'=>'Feedback can not have empty fields.');
+        }
+        else
+        {
+            $this->_send_feedback( $this->_params );
+            $info = array( 'success'=>true, 'message'=>'Feedback sent' );
+        }
+
+        return $info;
+    }
+
+    /**
+     * Sends an activation email to the user
+     *
+     * @param   array   &$data  The user information registering
+     * @return  void
+     */
+    private function _send_feedback ( &$data )
+    {
+        $mail = new \Ieru\Ieruapis\Organic\PHPMailer();
+
+        $mail->From = 'no-reply@organic-edunet.eu';
+        $mail->FromName = 'Organic.Edunet';
+        $mail->AddAddress('n.marianos@agroknow.gr');
+        $mail->AddAddress('d.martin@edu.uah.es');
+        $mail->AddReplyTo('no-reply@organic-edunet.eu', 'Information');
+        $mail->AddBCC('david.banos@uah.es');
+
+        $mail->WordWrap = 50;                                 // Set word wrap to 50 characters
+        $mail->IsHTML(true);                                  // Set email format to HTML
+
+        $mail->Subject = '[Organic.Edunet] [Feedback] '.$data['form-feedback-title'];
+        $mail->Body    = '<p>New feedback has been received from an user, as follows:</p><div>'.$data['form-feedback-body'].'</div>';
+        $mail->AltBody = "New feedback has been received from an user, as follows:\n".$data['form-feedback-body'];
+
+        if(!$mail->Send()) {
+           //echo 'Message could not be sent.';
+           //echo 'Mailer Error: ' . $mail->ErrorInfo;
+           //exit;
+        }
+    }
 }

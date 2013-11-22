@@ -36,6 +36,8 @@ class Config
             $this->_routes['POST'][] = array( '/register', 'controller'=>'AuthAPI#register' );
 
             $this->_routes['GET'][]  = array( '/users/:user/activate', 'controller'=>'AuthAPI#activate' );
+
+            $this->_routes['POST'][] = array( '/feedback', 'controller'=>'OrganicAPI#feedback' );
         }
         return $this->_routes;
     }
