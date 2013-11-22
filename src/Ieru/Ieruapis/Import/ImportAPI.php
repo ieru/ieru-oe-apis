@@ -79,15 +79,16 @@ class ImportAPI
     {
         $bad = 0;
 
-        foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml_full/*/*.xml' ) as $file ) 
+        foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml/*/*.xml' ) as $file ) 
         {
-            $name = preg_replace( '@/users/david/sites/github/ieru-api-server/xml_full@si', '', $file );
+            $name = preg_replace( '@/users/david/sites/github/ieru-api-server/xml@si', '', $file );
 
             $check = array(
-                            'general.identifier',
-                            'general.language',
-                            'technical.location',
-                            'classification.purpose',
+                            //'general.identifier',
+                            //'general.language',
+                            //'technical.location',
+                            'general.title',
+                            //'classification.purpose',
                         );
 
             libxml_use_internal_errors(true);

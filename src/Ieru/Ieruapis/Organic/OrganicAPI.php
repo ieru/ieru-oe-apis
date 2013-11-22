@@ -233,9 +233,11 @@ class OrganicAPI
             if ( is_object( $resource ) )
             {
                 $resource = $resource->lom;
-                $this->_retrieve_basic_data( $lom, $resource );
-                $this->_add_automatic_languages( $lom );
-                $results[] = $lom;
+                if ( $this->_retrieve_basic_data( $lom, $resource ) )
+                {
+                    $this->_add_automatic_languages( $lom );
+                    $results[] = $lom;
+                }
             }
         }
 
@@ -356,6 +358,8 @@ class OrganicAPI
                 $lom['age_range'][] = $age->educationals_typicalagerange_string;
 
         // Set titles: if it has no language set, use metametadata language identifier
+        if ( !$resource->general->generalstitle[0]->generals_title_string )
+            return false;
         foreach ( $resource->general->generalstitle as $title )
             if ( $title->generals_title_lang )
                 $lom['texts'][$title->generals_title_lang]['title'] = $title->generals_title_string;
@@ -404,6 +408,8 @@ class OrganicAPI
             if ( !isset( $language['keywords'] ) ) $language['keywords'] = array();
             $language['lang'] = $key;
         }
+
+        return true;
     }
 
     /**
