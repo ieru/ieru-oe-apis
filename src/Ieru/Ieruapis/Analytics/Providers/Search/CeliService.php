@@ -125,7 +125,7 @@ class CeliService implements MultilingualSearchAdapter
                     }
                     else
                     {
-                        $orx = [];
+                        $orx = array();
                         $or = explode( '|', $filter['valor'] );
                         if ( count( $or ) > 1 )
                         {
