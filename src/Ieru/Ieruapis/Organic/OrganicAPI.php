@@ -453,6 +453,8 @@ class OrganicAPI
 
     /**
      * Receive feedback from a form
+     *
+     * @return array
      */
     public function feedback ()
     {
@@ -460,15 +462,25 @@ class OrganicAPI
              OR !$this->_params['form-feedback-email'] 
              OR !$this->_params['form-feedback-name'] 
              OR !$this->_params['form-feedback-subject'] 
-             OR !@$this->_params['form-feedback-type']
-           )
+             OR !@$this->_params['form-feedback-type'] )
         {
-            $info = array( 'success'=>false, 'message'=>'Feedback can not have empty fields.');
+            $info = array( 'success'=>false, 'errcode'=>1001, 'message'=>'Feedback can not have empty fields.');
         }
         else
         {
+            // Store in the db
+            \Capsule\Database\Connection::make('analytics', $this->_db['analytics'], true );
+            $feedback = new \Ieru\Ieruapis\Analytics\Models\Feedback();
+            $feedback->feedback_name    = $this->_params['form-feedback-name'];
+            $feedback->feedback_email   = $this->_params['form-feedback-email'];
+            $feedback->feedback_subject = $this->_params['form-feedback-subject'];
+            $feedback->feedback_text    = $this->_params['form-feedback-body'];
+            $feedback->feedback_type    = $this->_params['form-feedback-type'];
+            $feedback->save();
+
+            // Send mail
             $this->_send_feedback( $this->_params );
-            $info = array( 'success'=>true, 'message'=>'Feedback sent' );
+            $info = array( 'success'=>true, 'errcode'=>1000, 'message'=>'Feedback sent' );
         }
 
         return $info;
@@ -495,7 +507,7 @@ class OrganicAPI
         $mail->IsHTML(true);                                  // Set email format to HTML
 
         $mail->Subject = '[Organic.Edunet] [Feedback] '.$data['form-feedback-subject'];
-        $mail->Body    = '<p>New feedback has been received from an user: '.$data['form-feedback-email'].'</p><p>------------------------</p><div>'.$data['form-feedback-body'].'</div>';
+        $mail->Body    = '<p>New feedback has been received from an user: '.$data['form-feedback-email'].'</p><p>------------------------</p><div>'.nl2br( $data['form-feedback-body'], true ).'</div>';
         $mail->AltBody = "New feedback has been received from an user, as follows:\n".$data['form-feedback-body'];
 
         if(!$mail->Send()) {
