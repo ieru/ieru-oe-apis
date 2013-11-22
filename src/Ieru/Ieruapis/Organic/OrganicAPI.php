@@ -375,14 +375,17 @@ class OrganicAPI
                 elseif ( $resource->metametadata->metametadata_lang )
                     $lom['texts'][$resource->metametadata->metametadata_lang]['keywords'][] = $text->generals_keywords_text_string;
         // Educational contexts
+        $lom['educational'] = array();
         foreach ( $resource->educational as $res )
             foreach ( $res->educationalscontext as $edu )
                 $lom['educational'][] = $edu->educationals_context_string;
         // Educational types
+            $lom['types'] = array();
         foreach ( $resource->educational as $res )
             foreach ( $res->educationalstype as $edu )
                 $lom['types'][] = $edu->educationals_type_string;
         // Intended audience
+        $lom['audience'] = array();
         foreach ( $resource->educational as $res )
             foreach ( $res->educationalsuserrole as $edu)
                 $lom['audience'][] = $edu->educationals_userrole_string;
