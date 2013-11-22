@@ -494,8 +494,8 @@ class OrganicAPI
         $mail->WordWrap = 50;                                 // Set word wrap to 50 characters
         $mail->IsHTML(true);                                  // Set email format to HTML
 
-        $mail->Subject = '[Organic.Edunet] [Feedback] '.$data['form-feedback-title'];
-        $mail->Body    = '<p>New feedback has been received from an user, as follows:</p><div>'.$data['form-feedback-body'].'</div>';
+        $mail->Subject = '[Organic.Edunet] [Feedback] '.$data['form-feedback-subject'];
+        $mail->Body    = '<p>New feedback has been received from an user: '.$data['form-feedback-email'].'</p><p>------------------------</p><div>'.$data['form-feedback-body'].'</div>';
         $mail->AltBody = "New feedback has been received from an user, as follows:\n".$data['form-feedback-body'];
 
         if(!$mail->Send()) {
