@@ -62,6 +62,13 @@ class Config
             $this->_autolang[] = 'et'; # Estonian
             $this->_autolang[] = 'pl'; # Polish
             $this->_autolang[] = 'pt'; # Portuguese
+            $this->_autolang[] = 'pl'; # Polish
+            $this->_autolang[] = 'cn'; # Chinese
+            $this->_autolang[] = 'ru'; # Russian
+            $this->_autolang[] = 'no'; # Norwegian
+            $this->_autolang[] = 'sl'; # Slovenian
+            $this->_autolang[] = 'hu'; # Hungarian
+            $this->_autolang[] = 'et'; # Estonian
         }
         return $this->_autolang;
     }
