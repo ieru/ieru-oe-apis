@@ -69,6 +69,7 @@ class Config
             $this->_autolang[] = 'sl'; # Slovenian
             $this->_autolang[] = 'hu'; # Hungarian
             $this->_autolang[] = 'et'; # Estonian
+            $this->_autolang[] = 'ar'; # Arabic
         }
         return $this->_autolang;
     }
