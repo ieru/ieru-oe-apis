@@ -14,6 +14,8 @@ use \Ieru\Restengine\Engine\Exception\APIException;
 use \Ieru\Ieruapis\Import\Models\Lom;
 use \Ieru\Ieruapis\Import\Models\Identifier;
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 class OrganicAPI
 {
     private $_params;
@@ -36,7 +38,10 @@ class OrganicAPI
         $this->_db = $databases;
 
         // Create database connection through Eloquent ORM
-        \Capsule\Database\Connection::make('main', $this->_db['resources'], true);
+        $capsule = new Capsule();
+        $capsule->addConnection( $this->_db['resources'] );
+        $capsule->setAsGlobal();
+        $capsule->bootEloquent();
     }
     
     /**
@@ -477,8 +482,13 @@ class OrganicAPI
         }
         else
         {
+            // Database connection
+            $capsule = new Capsule();
+            $capsule->addConnection( $this->_db['analytics'], 'analytics' );
+            $capsule->setAsGlobal();
+            $capsule->bootEloquent();
+
             // Store in the db
-            \Capsule\Database\Connection::make('analytics', $this->_db['analytics'], true );
             $feedback = new \Ieru\Ieruapis\Analytics\Models\Feedback();
             $feedback->feedback_name    = $this->_params['form-feedback-name'];
             $feedback->feedback_email   = $this->_params['form-feedback-email'];

@@ -49,6 +49,8 @@ use \Ieru\Ieruapis\Import\Models\ClassificationsKeyword;
 use \Ieru\Ieruapis\Import\Models\Taxonpath;
 use \Ieru\Ieruapis\Import\Models\Taxon;
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 class ImportAPI
 {
     /**
@@ -60,16 +62,19 @@ class ImportAPI
         $this->_config = $config;
 
         // Create database connection
-		\Capsule\Database\Connection::make('main', array(
-		    'driver'    => 'mysql',
-		    'host'      => 'localhost',
-		    'database'  => 'IEEE-LOM',
-		    'username'  => 'root',
-		    'password'  => '',
-		    'collation' => 'utf8_general_ci',
-		    'prefix'    => '',
-		    'charset'    => 'utf8'
-		), true);
+        $capsule = new Capsule();
+        $capsule->addConnection( array(
+            'driver'    => 'mysql',
+            'host'      => 'localhost',
+            'database'  => 'IEEE-LOM',
+            'username'  => 'root',
+            'password'  => '',
+            'collation' => 'utf8_general_ci',
+            'prefix'    => '',
+            'charset'   => 'utf8'
+        ) );
+        $capsule->setAsGlobal();
+        $capsule->bootEloquent();
     }
 
     /**

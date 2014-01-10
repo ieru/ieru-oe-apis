@@ -13,6 +13,8 @@ namespace Ieru\Ieruapis\Analytics;
 use \Ieru\Restengine\Engine\Exception\APIException;
 use \Ieru\Ieruapis\Analytics\Models\Rating;
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 class AnalyticsAPI
 {
     /**
@@ -333,20 +335,17 @@ class AnalyticsAPI
         $config  = null;
         $oauth   = new \Ieru\Ieruapis\Organic\AuthAPI( $this->_params, $config, $this->_db );
 
-        // Create database connection through Eloquent ORM to the Analytics DB
-        \Capsule\Database\Connection::make('analytics', $this->_db['analytics'], true);
-
         // Add the rating
         try
         {
             // Add an entry to the
             $rating = new Rating();
             $rating->user_id          = $oauth->check( $this->_params['usertoken'] );
-            $rating->service_id       = trim( $this->_params['service'] ) == 'xerox' ? 2 : 1;
+            $rating->service_id       = @trim( $this->_params['service'] ) == 'xerox' ? 2 : 1;
             $rating->resource_id      = $this->_params['entry'];
             $rating->translation_id   = $this->_params['hash'];
             $rating->rating_value     = $this->_params['rating'];
-            $rating->translation_from = $this->_params['from'];
+            $rating->translation_from = @$this->_params['from'];
             $rating->translation_lang = $this->_params['to'];
             $rating->save();
         }
@@ -374,7 +373,10 @@ class AnalyticsAPI
     public function get_rating ()
     {
         // Create database connection through Eloquent ORM to the Analytics DB
-        \Capsule\Database\Connection::make( 'analytics', $this->_db['analytics'], true );
+        $capsule = new Capsule();
+        $capsule->addConnection( $this->_db['analytics'], 'analytics' );
+        $capsule->setAsGlobal();
+        $capsule->bootEloquent();
 
         // Retrieve rating
         $ratings = Rating::where( 'translation_id', '=', $this->_params['hash'] )->get();
@@ -401,7 +403,10 @@ class AnalyticsAPI
     public function get_ratings_history ()
     {
         // Create database connection through Eloquent ORM to the Analytics DB
-        \Capsule\Database\Connection::make( 'analytics', $this->_db['analytics'], true );
+        $capsule = new Capsule();
+        $capsule->addConnection( $this->_db['analytics'], 'analytics' );
+        $capsule->setAsGlobal();
+        $capsule->bootEloquent();
 
         // Retrieve rating
         $ratings = Rating::where( 'translation_id', '=', $this->_params['hash'] )->get();

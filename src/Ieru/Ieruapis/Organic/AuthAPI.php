@@ -14,6 +14,8 @@ use \Ieru\Restengine\Engine\Exception\APIException;
 use Ieru\Ieruapis\Organic\Models\User;
 use Ieru\Ieruapis\Organic\Models\Token;
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+
 class AuthAPI
 {
     private $_params;
@@ -321,8 +323,11 @@ class AuthAPI
      */
     private function _connect_oauth ()
     {
-        // Create database connection through Eloquent ORM
-        \Capsule\Database\Connection::make('main', $this->_db['oauth'], true);
+        $capsule = new Capsule();
+        $capsule->addConnection( $this->_db['oauth'] );
+        $capsule->addConnection( $this->_db['analytics'], 'analytics' );
+        $capsule->setAsGlobal();
+        $capsule->bootEloquent();
     }
 
     /**
