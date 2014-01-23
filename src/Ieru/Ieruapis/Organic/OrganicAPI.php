@@ -261,8 +261,48 @@ class OrganicAPI
 
         $this->_retrieve_basic_data( $lom, $resource );
         $this->_add_automatic_languages( $lom );
+        $this->_add_language_text( $lom );
 
         return $lom;
+    }
+
+    /**
+     *
+     */
+    private function _add_language_text ( &$lom )
+    {
+        // Location of filters language file
+        $file = 'filters.php';
+
+        // Load to $translation the contents of filters languages
+        $translations = include( $file );
+
+        // Loop educational context and intended audience and add their translations
+        foreach ( $lom['educational'] as $educational )
+            // get the languages the texts should be on
+            foreach ( $lom['texts'] as $lang=>&$contents )
+                $contents['educational'][] = isset( $translations[$educational][$lang] ) 
+                                             ? $translations[$educational][$lang] 
+                                             : $educational;
+
+        foreach ( $lom['audience'] as $audience )
+            // get the languages the texts should be on
+            foreach ( $lom['texts'] as $lang=>&$contents )
+                $contents['audience'][] = isset( $translations[$audience][$lang] ) 
+                                          ? $translations[$audience][$lang] 
+                                          : $audience;
+
+        foreach ( $lom['types'] as $type )
+            // get the languages the texts should be on
+            foreach ( $lom['texts'] as $lang=>&$contents )
+                $contents['types'][] = isset( $translations[$type][$lang] ) 
+                                       ? $translations[$type][$lang] 
+                                       : $type;
+
+        foreach ( $lom['texts'] as $lang=>&$contents )
+            $contents['format'] = isset( $translations[$lom['format']][$lang] ) 
+                                  ? $translations[$lom['format']][$lang] 
+                                  : $lom['format'];
     }
 
     /**
@@ -295,22 +335,6 @@ class OrganicAPI
                 }
                 $i++;
             }
-        }
-
-        // Store languages in the file if any modification was done
-        if ( @$saved AND $fp = fopen( $file, 'w+' ) )
-        {
-            fwrite( $fp, "<?php\n" );
-            fwrite( $fp, "return array(\n" );
-            foreach ( $translations as $key=>$value )
-            {
-                fwrite( $fp, "\t'$key'=>array(\n" );
-                foreach ( $value as $k=>$v )
-                    fwrite( $fp, "\t\t'$k'=>'". addslashes($v)."',\n" );
-                fwrite( $fp, "\t),\n" );
-            }
-            fwrite( $fp, "\n);" );
-            fclose( $fp );
         }
     } 
 
