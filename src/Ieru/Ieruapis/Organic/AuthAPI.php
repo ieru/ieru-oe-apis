@@ -399,6 +399,12 @@ class AuthAPI
         $user = User::where('user_email', '=', $this->_params['email'])->first();
         if ( is_object( $user ) )
         {
+            // Create change password token and store in db
+            $token = sha1( $this->_params['email'].time() );
+            $user->user_password_change_token = $token;
+            $user->save();
+
+            // Create email
             $mail = new \Ieru\Ieruapis\Organic\PHPMailer();
             $mail->WordWrap = 50;
             $mail->IsHTML( true );
@@ -410,7 +416,7 @@ class AuthAPI
             $mail->AddBCC('david.banos@uah.es');
 
             $mail->Subject = '[Organic.Edunet] Retrieve account password';
-            $mail->Body    = '<p>You have requested to retrieve your account\'s password. If you click the following link, a new password will be generated and sent back to you.</p><p>If you have not requested to change your password, please ignore this email.</p>';
+            $mail->Body    = '<p>You have requested to retrieve your account\'s password. If you click the following link, a new password will be generated and sent back to you.</p><p>If you have not requested to change your password, please ignore this email.</p><a href="http://organic-edunet.eu/en/#/user/password/change/'.$token.'>http://organic-edunet.eu/en/#/user/password/change/'.$token.'</a>';
             $mail->AltBody = "You have requested to retrieve your account\'s password. If you click the following link, a new password will be generated and sent back to you.\n\nIf you have not requested to change your password, please ignore this email.";
 
             $mail->Send();
