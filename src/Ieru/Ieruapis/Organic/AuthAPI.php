@@ -417,7 +417,7 @@ class AuthAPI
 
             $mail->Subject = '[Organic.Edunet] Retrieve account password';
             $mail->Body    = '<p>You have requested to retrieve your account\'s password. If you click the following link, a new password will be generated and sent back to you.</p><p>If you have not requested to change your password, please ignore this email.</p><a href="http://organic-edunet.eu/en/#/user/password/change/'.$token.'>http://organic-edunet.eu/en/#/user/password/change/'.$token.'</a>';
-            $mail->AltBody = "You have requested to retrieve your account\'s password. If you click the following link, a new password will be generated and sent back to you.\n\nIf you have not requested to change your password, please ignore this email.";
+            $mail->AltBody = "You have requested to retrieve your account\'s password. If you click the following link, a new password will be generated and sent back to you.\n\nIf you have not requested to change your password, please ignore this email.\n\nhttp://organic-edunet.eu/en/#/user/password/change/".$token;
 
             $mail->Send();
         }
