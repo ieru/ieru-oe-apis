@@ -389,7 +389,7 @@ class AuthAPI
         $email = $this->_params['email'];
 
         if ( !filter_var( filter_var( $email, FILTER_SANITIZE_EMAIL ), FILTER_VALIDATE_EMAIL ) )
-            return[ 'success'=>false, 'message'=>'Email address is not valid.' ];
+            return array( 'success'=>false, 'message'=>'Email address is not valid.' );
 
         // Try to connect database = if an error occurs, it will return an array, nothing otherwise
         if ( $connect = $this->_connect_oauth() )
@@ -416,6 +416,6 @@ class AuthAPI
             $mail->Send();
         }
 
-        return [ 'success'=>true, 'message'=>'If an user is linked to the specified email, an email has been sent to your account with instructions for retrieving your password. Otherwise, no email will be sent.' ];
+        return array( 'success'=>true, 'message'=>'If an user is linked to the specified email, an email has been sent to your account with instructions for retrieving your password. Otherwise, no email will be sent.' );
     }
 }
