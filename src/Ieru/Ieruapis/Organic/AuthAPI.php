@@ -383,6 +383,8 @@ class AuthAPI
 
     /**
      * Requests to retrieve the password for the account
+     *
+     * @return array
      */
     public function retrieve ()
     {
@@ -423,5 +425,56 @@ class AuthAPI
         }
 
         return array( 'success'=>true, 'message'=>'If an user is linked to the specified email, an email has been sent to your account with instructions for retrieving your password. Otherwise, no email will be sent.' );
+    }
+
+    /**
+     * Accept the password change, send new password to user
+     *
+     * @return array
+     */
+    public function retrieve_accepted ()
+    {
+        $user = User::where('user_password_change_token', '=', $this->_params['token'])->first();
+        if ( is_object( $user ) )
+        {
+            $user->user_password = $this->_hash_password( $this->_random_password() );
+            $user->save();
+
+            // Create email
+            $mail = new \Ieru\Ieruapis\Organic\PHPMailer();
+            $mail->WordWrap = 50;
+            $mail->IsHTML( true );
+
+            $mail->From = 'no-reply@organic-edunet.eu';
+            $mail->FromName = 'Organic.Edunet';
+            $mail->AddAddress( $email );  // Add a recipient
+            $mail->AddReplyTo('no-reply@organic-edunet.eu', 'Information');
+            $mail->AddBCC('david.banos@uah.es');
+
+            $mail->Subject = '[Organic.Edunet] Account password changed';
+            $mail->Body    = '<p>Your account password has been changed to: '.$user->user_password.'</p>';
+            $mail->AltBody = "Your account password has been changed to: ".$user->user_password;
+
+            $mail->Send();
+        }
+        else
+        {
+            return array( 'success'=>false, 'message'=>'Incorrect token for password change.' );
+        }
+
+        return array( 'success'=>true, 'message'=>'Password changed and mail sent.' );
+    }
+
+    private function _random_password () 
+    {
+        $alphabet = "abcdefghijklmnopqrstuwxyzABCDEFGHIJKLMNOPQRSTUWXYZ0123456789";
+        $pass = array();
+        $alphaLength = strlen( $alphabet ) - 1;
+        for ( $i = 0; $i < 16; $i++ ) 
+        {
+            $n = rand( 0, $alphaLength );
+            $pass[] = $alphabet[$n];
+        }
+        return implode( $pass ); //turn the array into a string
     }
 }
