@@ -380,4 +380,42 @@ class AuthAPI
         // Get user id of the usertoken
         return 1;
     }
+
+    /**
+     * Requests to retrieve the password for the account
+     */
+    public function retrieve ()
+    {
+        $email = $this->_params['email'];
+
+        if ( !filter_var( filter_var( $email, FILTER_SANITIZE_EMAIL ), FILTER_VALIDATE_EMAIL ) )
+            return[ 'success'=>false, 'message'=>'Email address is not valid.' ];
+
+        // Try to connect database = if an error occurs, it will return an array, nothing otherwise
+        if ( $connect = $this->_connect_oauth() )
+            return $connect;
+
+        // Check if an user has been created for the email
+        $user = User::where('user_email', '=', $this->_params['email'])->first();
+        if ( is_object( $user ) )
+        {
+            $mail = new \Ieru\Ieruapis\Organic\PHPMailer();
+            $mail->WordWrap = 50;
+            $mail->IsHTML( true );
+
+            $mail->From = 'no-reply@organic-edunet.eu';
+            $mail->FromName = 'Organic.Edunet';
+            $mail->AddAddress( $email );  // Add a recipient
+            $mail->AddReplyTo('no-reply@organic-edunet.eu', 'Information');
+            $mail->AddBCC('david.banos@uah.es');
+
+            $mail->Subject = '[Organic.Edunet] Retrieve account password';
+            $mail->Body    = '<p>You have requested to retrieve your account\'s password. If you click the following link, a new password will be generated and sent back to you.</p><p>If you have not requested to change your password, please ignore this email.</p>';
+            $mail->AltBody = "You have requested to retrieve your account\'s password. If you click the following link, a new password will be generated and sent back to you.\n\nIf you have not requested to change your password, please ignore this email.";
+
+            $mail->Send();
+        }
+
+        return [ 'success'=>true, 'message'=>'If an user is linked to the specified email, an email has been sent to your account with instructions for retrieving your password. Otherwise, no email will be sent.' ];
+    }
 }
