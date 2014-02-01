@@ -402,9 +402,16 @@ class AuthAPI
         if ( is_object( $user ) )
         {
             // Create change password token and store in db
-            $token = sha1( $this->_params['email'].time() );
-            $user->user_password_change_token = $token;
-            $user->save();
+            if ( $user->user_password_change_token )
+            {
+                $token = $user->user_password_change_token;
+            }
+            else
+            {
+                $token = sha1( $this->_params['email'].time() );
+                $user->user_password_change_token = $token;
+                $user->save();
+            }
 
             // Create email
             $mail = new \Ieru\Ieruapis\Organic\PHPMailer();
@@ -442,6 +449,7 @@ class AuthAPI
         if ( is_object( $user ) )
         {
             $user->user_password = $this->_hash_password( $this->_random_password() );
+            $user->user_password_change_token = '';
             $user->save();
 
             // Create email
