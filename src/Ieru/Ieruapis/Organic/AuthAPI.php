@@ -448,7 +448,8 @@ class AuthAPI
         $user = User::where('user_password_change_token', '=', $this->_params['token'])->first();
         if ( is_object( $user ) )
         {
-            $user->user_password = $this->_hash_password( $this->_random_password() );
+            $new_password = $this->_random_password();
+            $user->user_password = $this->_hash_password( $new_password );
             $user->user_password_change_token = '';
             $user->save();
 
@@ -464,8 +465,8 @@ class AuthAPI
             $mail->AddBCC('david.banos@uah.es');
 
             $mail->Subject = '[Organic.Edunet] Account password changed';
-            $mail->Body    = '<p>Your account password has been changed to username "'.$user->user_username.'": '.$user->user_password.'</p>';
-            $mail->AltBody = "Your account password has been changed to '".$user->user_username."': ".$user->user_password;
+            $mail->Body    = '<p>Your account password has been changed to username "'.$user->user_username.'": '.$new_password.'</p>';
+            $mail->AltBody = "Your account password has been changed to '".$user->user_username."': ".$new_password;
 
             $mail->Send();
         }
