@@ -441,6 +441,9 @@ class AuthAPI
      */
     public function retrieve_accepted ()
     {
+        if ( !$this->_params['token'] )
+            return array( 'success'=>false, 'message'=>'Invalid token for password change.' );
+
         // Try to connect database = if an error occurs, it will return an array, nothing otherwise
         if ( $connect = $this->_connect_oauth() )
             return $connect;
