@@ -37,6 +37,7 @@ class Config
 
             $this->_routes['GET'][]  = array( '/users/:user/activate', 'controller'=>'AuthAPI#activate' );
             $this->_routes['POST'][] = array( '/users/retrieve', 'controller'=>'AuthAPI#retrieve' );
+            $this->_routes['GET'][]  = array( '/users/password/change/:token', 'controller'=>'AuthAPI#retrieve_accepted' );
 
             $this->_routes['POST'][] = array( '/feedback', 'controller'=>'OrganicAPI#feedback' );
         }

@@ -434,6 +434,10 @@ class AuthAPI
      */
     public function retrieve_accepted ()
     {
+        // Try to connect database = if an error occurs, it will return an array, nothing otherwise
+        if ( $connect = $this->_connect_oauth() )
+            return $connect;
+
         $user = User::where('user_password_change_token', '=', $this->_params['token'])->first();
         if ( is_object( $user ) )
         {
@@ -452,8 +456,8 @@ class AuthAPI
             $mail->AddBCC('david.banos@uah.es');
 
             $mail->Subject = '[Organic.Edunet] Account password changed';
-            $mail->Body    = '<p>Your account password has been changed to: '.$user->user_password.'</p>';
-            $mail->AltBody = "Your account password has been changed to: ".$user->user_password;
+            $mail->Body    = '<p>Your account password has been changed to username "'.$user->user_username.'": '.$user->user_password.'</p>';
+            $mail->AltBody = "Your account password has been changed to '".$user->user_username."': ".$user->user_password;
 
             $mail->Send();
         }
