@@ -463,7 +463,7 @@ class AuthAPI
 
             $mail->From = 'no-reply@organic-edunet.eu';
             $mail->FromName = 'Organic.Edunet';
-            $mail->AddAddress( $email );  // Add a recipient
+            $mail->AddAddress( $user->user_email );  // Add a recipient
             $mail->AddReplyTo('no-reply@organic-edunet.eu', 'Information');
             $mail->AddBCC('david.banos@uah.es');
 
