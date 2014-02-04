@@ -493,4 +493,48 @@ class AuthAPI
         }
         return implode( $pass ); //turn the array into a string
     }
+
+    /**
+     *
+     *
+     * @return array
+     */
+    public function change_settings ()
+    {
+        // Check that the token is being sent
+        if ( !isset( $this->_params['token'] ) )
+            return array( 'success'=>false, 'message'=>'Invalid token for settings change.' );
+
+        // Try to connect database = if an error occurs, it will return an array, nothing otherwise
+        if ( $connect = $this->_connect_oauth() )
+            return $connect;
+
+        // Retrieve user
+        $token = Token::where('token_chars', '=', @$this->_params['token'])->first();
+        if ( is_object( $token ) )
+        {
+            $user = User::where('user_id', '=', $token->user_id)->first();
+
+            // Check password change
+            if ( isset( $this->_params['password'] ) AND isset( $this->_params['password-repeat'] ) 
+                AND $this->_params['password'] == $this->_params['password-repeat'] )
+            {
+                $user->user_password = $this->_hash_password( $this->_params['password'] );
+            }
+            elseif ( isset( $this->_params['password'] ) AND isset( $this->_params['password-repeat'] )
+                AND $this->_params['password'] != @$this->_params['password-repeat'] )
+            {
+                return array( 'success'=>false, 'message'=>'New password and password confirmation must be the same.' );
+            }
+
+            // Save changes
+            $user->save();
+
+            return array( 'success'=>true, 'message'=>'Settings changed.' );
+        }
+        else
+        {
+            return array( 'message'=>false, 'message'=>'Invalid token.' );
+        }
+    }
 }
