@@ -259,7 +259,6 @@ class AuthAPI
         $mail->FromName = 'Organic.Edunet';
         $mail->AddAddress( $data['user_email'] );  // Add a recipient
         $mail->AddReplyTo('no-reply@organic-edunet.eu', 'Information');
-        $mail->AddBCC('david.banos@uah.es');
 
         $mail->WordWrap = 50;                                 // Set word wrap to 50 characters
         $mail->IsHTML(true);                                  // Set email format to HTML
@@ -422,7 +421,6 @@ class AuthAPI
             $mail->FromName = 'Organic.Edunet';
             $mail->AddAddress( $email );  // Add a recipient
             $mail->AddReplyTo('no-reply@organic-edunet.eu', 'Information');
-            $mail->AddBCC('david.banos@uah.es');
 
             $mail->Subject = '[Organic.Edunet] Retrieve account password';
             $mail->Body    = '<p>You have requested to retrieve your account\'s password. If you click the following link, a new password will be generated and sent back to you.</p><p>If you have not requested to change your password, please ignore this email.</p><a href="http://organic-edunet.eu/en/#/user/password/change/'.$token.'">http://organic-edunet.eu/en/#/user/password/change/'.$token.'</a>';
@@ -465,7 +463,6 @@ class AuthAPI
             $mail->FromName = 'Organic.Edunet';
             $mail->AddAddress( $user->user_email );  // Add a recipient
             $mail->AddReplyTo('no-reply@organic-edunet.eu', 'Information');
-            $mail->AddBCC('david.banos@uah.es');
 
             $mail->Subject = '[Organic.Edunet] Account password changed';
             $mail->Body    = '<p>Your account password has been changed to username "'.$user->user_username.'": '.$new_password.'</p>';

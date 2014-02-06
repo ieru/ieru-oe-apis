@@ -543,8 +543,8 @@ class OrganicAPI
         $mail->FromName = 'Organic.Edunet';
         $mail->AddAddress('n.marianos@agroknow.gr');
         $mail->AddAddress('d.martin@edu.uah.es');
+        $mail->AddAddress('david.banos@uah.es');
         $mail->AddReplyTo('no-reply@organic-edunet.eu', 'Information');
-        $mail->AddBCC('david.banos@uah.es');
 
         $mail->WordWrap = 50;                                 // Set word wrap to 50 characters
         $mail->IsHTML(true);                                  // Set email format to HTML
