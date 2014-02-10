@@ -161,14 +161,14 @@ class AnalyticsAPI
      */
     public function get_translation ()
     {
-        if ( isset( $this->_params['cache'] ) AND $this->_params['cache'] )
+        if ( isset( $this->_params['cache'] ) AND $this->_params['cache'] == 'true' )
         {
             // Try to get translation from cache
             $cache = new Providers\Cache\CeliService( $this->_params );
             $translation = json_decode( $cache->request( $this->_params ) );
 
             // If not in cache, request a translation and store it in the cache service
-            if ( @$translation->success == 'false' OR !$translation )
+            if ( $translation->success == 'false' OR !$translation )
             {
                 // Get the text and set it in the cache
                 $translation = $this->_translate();

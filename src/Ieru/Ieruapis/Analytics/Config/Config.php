@@ -52,7 +52,7 @@ class Config
 	 */
 	public function get_translation_services ()
 	{
-		return array( 'microsoft', 'xerox' );
+		return array( 'microsoft', 'xerox', 'moses' );
 	}
 
 	/**
@@ -66,7 +66,7 @@ class Config
 	}
 
 	/**
-	 * Returns the routes allowed in this API
+	 * Returns the search services available in this API
 	 *
 	 * @return array
 	 */

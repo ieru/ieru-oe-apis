@@ -552,11 +552,5 @@ class OrganicAPI
         $mail->Subject = '[Organic.Edunet] [Feedback] '.$data['form-feedback-subject'];
         $mail->Body    = '<p>New feedback has been received from an user: '.$data['form-feedback-email'].'</p><p>------------------------</p><div>'.nl2br( $data['form-feedback-body'], true ).'</div>';
         $mail->AltBody = "New feedback has been received from an user, as follows:\n".$data['form-feedback-body'];
-
-        if(!$mail->Send()) {
-           //echo 'Message could not be sent.';
-           //echo 'Mailer Error: ' . $mail->ErrorInfo;
-           //exit;
-        }
     }
 }
