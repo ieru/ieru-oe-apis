@@ -423,9 +423,9 @@ class OrganicAPI
             foreach ( $res->educationalsuserrole as $edu)
                 $lom['audience'][] = $edu->educationals_userrole_string;
         // Set copyright info
-        $lom['copyright']['has_copyright'] = $resource->right->right_copyright;
-        $lom['copyright']['language'] = $resource->right->right_description;
-        $lom['copyright']['description'] = $resource->right->right_description;
+        @$lom['copyright']['has_copyright'] = $resource->right->right_copyright;
+        @$lom['copyright']['language'] = $resource->right->right_description;
+        @$lom['copyright']['description'] = $resource->right->right_description;
 
         // Adds basic information
         foreach ( $lom['texts'] as $key=>&$language )
