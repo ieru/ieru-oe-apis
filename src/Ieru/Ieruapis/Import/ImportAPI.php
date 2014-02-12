@@ -66,7 +66,7 @@ class ImportAPI
         $capsule->addConnection( array(
             'driver'    => 'mysql',
             'host'      => 'localhost',
-            'database'  => 'IEEE-LOM',
+            'database'  => 'ieru_organic_resources',
             'username'  => 'root',
             'password'  => '',
             'collation' => 'utf8_general_ci',
@@ -86,7 +86,7 @@ class ImportAPI
 
         foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml/*/*.xml' ) as $file ) 
         {
-            $name = preg_replace( '@/users/david/sites/github/ieru-api-server/xml@si', '', $file );
+            $name = preg_replace( '@/Users/david/Sites/ieru-api-server/xml@si', '', $file );
 
             $check = array(
                             //'general.identifier',
@@ -141,7 +141,7 @@ class ImportAPI
         //foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml_full/*/*.xml' ) as $file ) 
         foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml/*/*' ) as $file ) 
         {
-            $name = preg_replace( '@/users/david/sites/github/ieru-api-server/xml/@si', '', $file );
+            $name = preg_replace( '@/Users/david/Sites/ieru-api-server/xml/@si', '', $file );
 
             if ( $finder = Lom::where('lom_original_file_name', '=', $name)->get()->toArray() )
             {
@@ -192,7 +192,8 @@ class ImportAPI
             	{
         	    	$gen_d = new GeneralsTitle();
         	    	$gen_d->generals_title_string = $desc;
-        	    	$gen_d->generals_title_lang = $desc->attributes()['language'];
+                    $attribute = $desc->attributes();
+        	    	$gen_d->generals_title_lang = $attributes['language'];
         	    	$general->generalstitle()->save( $gen_d );
             	}
 
@@ -213,7 +214,8 @@ class ImportAPI
                     {
             	    	$gen_d = new GeneralsDescription();
             	    	$gen_d->generals_description_string = $desc;
-            	    	$gen_d->generals_description_lang = $desc->attributes()['language'];
+                        $attribute = $desc->attributes();
+            	    	$gen_d->generals_description_lang = $attribute['language'];
             	    	$general->generalsdescription()->save( $gen_d );
                     } 
             	}
@@ -229,7 +231,8 @@ class ImportAPI
             		{
             			$gen_d = new GeneralsKeywordsText();
         		    	$gen_d->generals_keywords_text_string = $lang;
-        		    	$gen_d->generals_keywords_text_lang = $lang->attributes()['language'];
+                        $attribute = $lang->attributes();
+        		    	$gen_d->generals_keywords_text_lang = $attribute['language'];
         		    	$genk->generalskeywordtext()->save( $gen_d );
             		}
             	}
@@ -246,7 +249,8 @@ class ImportAPI
             		{
             			$gen_d = new GeneralsCoveragesText();
         		    	$gen_d->generals_coverages_text_string = $lang;
-        		    	$gen_d->generals_coverages_text_lang = $lang->attributes()['language'];
+                        $attribute = $lang->attributes();
+        		    	$gen_d->generals_coverages_text_lang = $attribute['language'];
         		    	$genk->generalscoveragestext()->save( $gen_d );
             		}
             	}
@@ -258,9 +262,11 @@ class ImportAPI
         			$identifier = new Identifier();
         			$identifier->lom_id = $general->lom_id;
         	    	$identifier->identifier_catalog =@ $id->catalog;
-        	    	$identifier->identifier_catalog_lang =@ $id->catalog->attributes()['language'];
+                    $attribute = $id->catalog->attributes();
+        	    	$identifier->identifier_catalog_lang =@ $attribute['language'];
         	    	$identifier->identifier_entry =@ $id->entry;
-        	    	$identifier->identifier_entry_lang =@ $id->entry->attributes()['language'];
+                    $attribute = $id->entry->attributes();
+        	    	$identifier->identifier_entry_lang =@ $attribute['language'];
         	    	$general->identifier()->save( $identifier );
             	}
 
@@ -279,7 +285,8 @@ class ImportAPI
         	    	if ( isset( $xml->lifeCycle->version ) )
         	    	{
         		    	$life->lifecycle_version =@ $xml->lifeCycle->version->string;
-        		    	$life->lifecycle_version_lang =@ $xml->lifeCycle->version->string->attributes()['language'];
+                        $attribute = $xml->lifeCycle->version->string->attributes();
+        		    	$life->lifecycle_version_lang =@ $attribute['language'];
         	    	}
         	    	$lom->lifecycle()->save( $life );
             	}
@@ -294,9 +301,10 @@ class ImportAPI
         	    	$contribute->contribute_role_source =@ $id->role->source;
                     if ( isset( $id->date->dateTime ) )
                     {
-            	    	$contribute->contribute_date =@ $id->date->dateTime;
+            	    	//$contribute->contribute_date =@ $id->date->dateTime;
             			$contribute->contribute_date_description =@ $id->date->string;
-            	    	$contribute->contribute_date_description_lang =@ $id->date->string->attributes()['language'];
+                        $attribute = $id->date->string->attributes();
+            	    	$contribute->contribute_date_description_lang =@ $attribute['language'];
                     }
         	    	$life->contribute()->save( $contribute );
 
@@ -326,9 +334,11 @@ class ImportAPI
                     $identifier = new Identifier();
                     $identifier->lom_id = $metadata->lom_id;
                     $identifier->identifier_catalog =@ $id->catalog;
-                    $identifier->identifier_catalog_lang =@ $id->catalog->attributes()['language'];
+                    $attribute = $id->catalog->attributes();
+                    $identifier->identifier_catalog_lang =@ $attribute['language'];
                     $identifier->identifier_entry =@ $id->entry;
-                    $identifier->identifier_entry_lang =@ $id->entry->attributes()['language'];
+                    $attribute = $id->entry->attributes();
+                    $identifier->identifier_entry_lang =@ $attribute['language'];
                     $metadata->identifier()->save( $identifier );
                 }
 
@@ -354,7 +364,8 @@ class ImportAPI
                     {
                         $contribute->contribute_date =@ $id->date->dateTime;
                         $contribute->contribute_date_description =@ $id->date->string;
-                        $contribute->contribute_date_description_lang =@ $id->date->string->attributes()['language'];
+                        $attribute = $id->date->string->attributes;
+                        $contribute->contribute_date_description_lang =@ $attribute['language'];
                     }
                     $metadata->contribute()->save( $contribute );
 
@@ -403,7 +414,8 @@ class ImportAPI
                 {
                     $entry = new TechnicalsInstallationremark();
                     $entry->technicals_installationremark_string =@ $installation->string;
-                    $entry->technicals_installationremark_lang =@ $installation->string->attributes()['language'];
+                    $attribute = $installation->string->attributes();
+                    $entry->technicals_installationremark_lang =@ $attribute['language'];
                     $technical->technicalsinstallationremark()->save( $entry );
                 }
 
@@ -413,7 +425,7 @@ class ImportAPI
                 {
                     $entry = new TechnicalsOtherplatformrequirement();
                     $entry->technicals_otherplatformrequirement_string =@ $requirement->string;
-                    $entry->technicals_otherplatformrequirement_lang =@ $requirement->string->attributes()['language'];
+                    $entry->technicals_otherplatformrequirement_lang =@ $attribute['language'];
                     $technical->technicalsotherplatformrequirement()->save( $entry );
                 }
 
@@ -510,7 +522,7 @@ class ImportAPI
                         {
                             $type = new EducationalsTypicalagerange();
                             $type->educationals_typicalagerange_string = $learningtype->string;
-                            $type->educationals_typicalagerange_lang = $learningtype->string->attributes()['language'];
+                            $type->educationals_typicalagerange_lang = $attribute['language'];
                             $resource->educationalstype()->save( $type );
                         }
                         // Typical age range
@@ -518,7 +530,7 @@ class ImportAPI
                         {
                             $type = new EducationalsDescription();
                             $type->educationals_description_string = $learningtype->string;
-                            $type->educationals_description_lang = $learningtype->string->attributes()['language'];
+                            $type->educationals_description_lang = $attribute['language'];
                             $resource->educationalstype()->save( $type );
                         }
                     }
@@ -543,7 +555,8 @@ class ImportAPI
                     if ( isset( $xml->rights->description ) )
                     {
                         $rights->right_description = $xml->rights->description->string;
-                        $rights->right_description_lang = $xml->rights->description->string->attributes()['language'];
+                        $attribute = $xml->rights->description->string->attributes();
+                        $rights->right_description_lang = $attribute['language'];
                     }
                     $lom->right()->save( $rights );
                 }
@@ -573,7 +586,8 @@ class ImportAPI
                                 if ( $r->description->string )
                                 {
                                     $resource->resource_description = $r->description->string;
-                                    $resource->resource_description_lang = $r->description->string->attributes()['language'];
+                                    $attribute = $r->description->string->attributes();
+                                    $resource->resource_description_lang = $attribute['language'];
                                 }
                                 $relation->resource()->save( $resource );
                                 // Set identifiers
@@ -604,7 +618,10 @@ class ImportAPI
                             $arr->annotation_date = $annotation->date->dateTime;
                         $arr->annotation_description = $annotation->description->string;
                         if ( isset( $annotation->description->string ) AND  $annotation->description->string->attributes() )
-                            $arr->annotation_description_lang = $annotation->description->string->attributes()['language'];
+                        {
+                            $attribute = $annotation->description->string->attributes();
+                            $arr->annotation_description_lang = $attribute['language'];
+                        }
                         $lom->annotation()->save( $arr );
                     }
                 }
@@ -630,7 +647,8 @@ class ImportAPI
                         {
                             $tax = new Taxonpath();
                             $tax->taxonpath_source =@ $tp->source->string;
-                            $tax->taxonpath_source_lang =@ $tp->source->string->attributes()['language'];
+                            $attribute = $tp->source->string->attributes();
+                            $tax->taxonpath_source_lang =@ $attribute['language'];
                             $arr->taxonpath()->save( $tax );
 
                             // Taxon
@@ -641,7 +659,8 @@ class ImportAPI
                                 if ( $t->entry->string )
                                 {
                                     $ta->taxon_entry =@ $t->entry->string;
-                                    $ta->taxon_entry_lang =@ $t->entry->string->attributes()['language'];
+                                    $attribute = $t->entry->string->attributes();
+                                    $ta->taxon_entry_lang =@ $attribute['language'];
                                 }
                                 $tax->taxon()->save( $ta );
                             }
