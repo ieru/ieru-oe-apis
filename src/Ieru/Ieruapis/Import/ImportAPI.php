@@ -139,7 +139,7 @@ class ImportAPI
     	//$file = $_SERVER['DOCUMENT_ROOT'].'/xml/resource.xml';
         $parsed = 0;
         //foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml_full/*/*.xml' ) as $file ) 
-        foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml/*/*' ) as $file ) 
+        foreach ( glob( $_SERVER['DOCUMENT_ROOT'].'/xml/*/*.xml' ) as $file ) 
         {
             $name = preg_replace( '@/Users/david/Sites/ieru-api-server/xml/@si', '', $file );
 
@@ -193,7 +193,7 @@ class ImportAPI
         	    	$gen_d = new GeneralsTitle();
         	    	$gen_d->generals_title_string = $desc;
                     $attribute = $desc->attributes();
-        	    	$gen_d->generals_title_lang = $attributes['language'];
+        	    	$gen_d->generals_title_lang = $attribute['language'];
         	    	$general->generalstitle()->save( $gen_d );
             	}
 
