@@ -376,8 +376,11 @@ class AuthAPI
         // Connect with the oauth database
         $this->_connect_oauth();
 
+        // Get the user id for the usertoken
+        $token = Token::where('token_chars', '=', $usertoken )->first();
+
         // Get user id of the usertoken
-        return 1;
+        return $token->user_id;
     }
 
     /**
